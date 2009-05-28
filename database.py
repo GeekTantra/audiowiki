@@ -50,7 +50,7 @@ class Database:
         threadList = self.c.execute(
             "SELECT id FROM threads WHERE categoryid = %s ORDER BY id;",
             (category,))
-		return threadList
+	return threadList
 
     def isUser(self,userString):
         count = self.c.execute(
