@@ -118,8 +118,8 @@ def playThread(thread, key, keyDict):
     """
     Plays the thread's short category.
     """
-	debugPrint(str(thread))
-	debugPrint(str(key))
+    debugPrint(str(thread))
+    debugPrint(str(key))
     playFile('press-'+str(key)+'-for',keyDict)
     playFile('thread-'+str(thread),keyDict)
 
@@ -298,10 +298,12 @@ def addTopic():
     parentID = walkCategoryTree('choose-category','confirmation-sound', None, chooseCategoryDict)
     db.addComment(parentID, user)
     id = db.addThread(parentID, user) #should return ID
-    os.mkdir(SOUND_DIR+str(id))
-    os.rename(SOUND_DIR+subjName+".wav", SOUND_DIR+"thread-"+str(id)+".wav")#rename the file to id
-    os.rename(SOUND_DIR+subjName+".wav", SOUND_DIR+"comment-"+str(id)+".wav")
+    os.mkdir(SOUND_DIR+str(id)) #makes directory 
+    os.rename(SOUND_DIR+subjName+".wav", SOUND_DIR+str(id)+"/"+"thread-"+str(id)+".wav")
+    os.rename(SOUND_DIR+commentName+".wav", SOUND_DIR+str(id)+"/"+"comment-"+str(id)+".wav")
     playFile('thanks-for-posting', blankDict)
+    #os.remove(SOUND_DIR+commentName+".wav")
+    #os.remove(SOUND_DIR+subjName+".wav")
     personalOptions()
 	
 def addFriend():
