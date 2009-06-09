@@ -47,10 +47,12 @@ class Database:
         """
         Gets the threads which are chidren to the specified category.
         """
-        threadList = self.c.execute(
+        self.c.execute(
             "SELECT id FROM threads WHERE categoryid = %s ORDER BY id;",
             (category,))
-	return threadList
+	threadList = self.c.fetchall()
+        threadList = [x[0] for x in threadList] #Get ID value for each thread in selection
+        return threadList
 
     def isUser(self,userString):
         count = self.c.execute(
@@ -82,7 +84,14 @@ class Database:
         self.db.commit()
 	return self.c.lastrowid
 
-    def getCommentDict(self, userString): 
+    def isSkipped(self, commentID):
+        self.c.execute(
+            "UPDATE comments SET skipCount = skipCount + 1 WHERE id = %s;",
+            (commentID))
+        self.db.commit()
+        return self.c.lastrowid
+
+    def getCommentDict(self, userString):
         count = self.c.execute(
             "SELECT threadCursor FROM users WHERE phoneNum = %s;",
             (userString,))

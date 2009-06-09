@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #Menu system
 import sys
 if len(sys.argv) > 1:
@@ -101,8 +102,9 @@ def playThreadList(threadList):
         playFile('empty-category')
         return
     while True:
-        pageCount = float(len(threadList))/9.0
-        for i in xrange(int(round(pageCount))):
+        pageCount = int(len(threadList))/9 + 1
+        debugPrint(str(pageCount))
+        for i in xrange(pageCount):
             currentKey = 1    
             keyDict = newKeyDict()
             for thread in threadList[(i*9):((i+1)*9)]:
@@ -118,10 +120,9 @@ def playThread(thread, key, keyDict):
     """
     Plays the thread's short category.
     """
-    debugPrint(str(thread))
-    debugPrint(str(key))
+    debugPrint("PLAYING THREAD #%s, KEY %s", (str(thread),str(key))
     playFile('press-'+str(key)+'-for',keyDict)
-    playFile('thread-'+str(thread),keyDict)
+    playFile(str(thread)+"/"+'thread-'+str(thread),keyDict)
 
 def walkCategoryTree(intro, outro, parent, keyDict):
     """
@@ -211,16 +212,18 @@ def readThread(thread):
     """
     Implements the read thread state.
     """
-    debugPrint("read thread def") 
+    debugPrint("READING COMMENTS IN THREAD")
     keyDict = newKeyDict()
     keyDict['1'] = (addComment,(thread,))
 
-    playFile('thread-'+str(thread),keyDict)
     playFile('comment-intro',keyDict)
+    playFile(str(thread)+'/'+'thread-'+str(thread),keyDict)
     newComments = db.recentCommentLookup(user,thread)
     for comment in newComments:
+        keyDict['2'] = (skipComment, (comment,))
         commentListen(thread,comment,keyDict)
         db.updateUserCommentLocation(user,thread,comment)
+        debugPrint("THREAD: %s, COMMENT: %s", (thread, comment))
     allComments = db.allCommentLookup(thread)
     for comment in allComments:
         commentListen(thread,comment,keyDict)
