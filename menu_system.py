@@ -120,7 +120,8 @@ def playThread(thread, key, keyDict):
     """
     Plays the thread's short category.
     """
-    debugPrint("PLAYING THREAD #%s, KEY %s", (str(thread),str(key))
+    dbug = "PLAYING THREAD " + str(thread) + ", KEY " + str(key)
+    debugPrint(dbug)
     playFile('press-'+str(key)+'-for',keyDict)
     playFile(str(thread)+"/"+'thread-'+str(thread),keyDict)
 
@@ -220,17 +221,22 @@ def readThread(thread):
     playFile(str(thread)+'/'+'thread-'+str(thread),keyDict)
     newComments = db.recentCommentLookup(user,thread)
     for comment in newComments:
-        keyDict['2'] = (skipComment, (comment,))
+        keyDict['5'] = (skipComment, (comment,))
+        debugPrint("THREAD: " + str(thread) + ", COMMENT: " + str(comment) + " IS BEING PLAYED")
         commentListen(thread,comment,keyDict)
+        debugPrint("COMMENT FINISHED")
+        db.hasPlayed(comment)
         db.updateUserCommentLocation(user,thread,comment)
-        debugPrint("THREAD: %s, COMMENT: %s", (thread, comment))
     allComments = db.allCommentLookup(thread)
     for comment in allComments:
         commentListen(thread,comment,keyDict)
     RaiseZero()
 
+def skipComment(commentID):
+    db.isSkipped(commentID)
+
 def commentListen(thread,comment,keyDict):
-    return playFile(str(thread)+'/'+str(comment),keyDict)
+    return playFile(str(thread)+'/'+str(comment), keyDict)
 
 def addComment(thread):
     while True:
@@ -314,7 +320,6 @@ def addFriend():
     keyDict = newKeyDict()
     number = 0
     number = playFileGetKey('enter-friend-number', 10, 11, blankDict)
-    keyDict['1'] = (addFriendConfirm,(number,))
     keyDict['2'] = addFriend
     #'Please enter your friend's phone number'
     sayNumber(number)

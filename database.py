@@ -18,15 +18,27 @@ class Database:
         self.c = self.db.cursor()
         self.c.execute('USE '+db_name+';')
 
-    def getRecentThreads(self,level,optionsPerLevel):
-        self.c.execute("""SELECT id FROM threads order by time;""")
+    def getRecentThreads(self, level, optionsPerLevel):
+        self.c.execute("""SELECT id FROM threads ORDER BY time DESC;""")
         results = self.c.fetchall()
-        #Unpack the tuples
+        """
+        MySQLdb returns tuples in the form (x,y). Since we only have one
+        column returned here, the tuples are (x).
+        """
         results = [r[0] for r in results]
         if len(results) < (level+1)*optionsPerLevel:
             return results[-optionsPerLevel:]
         else:
             return results[level*optionsPerLevel:(level+1)*optionsPerLevel]
+
+    def getPopularThreads(self):
+        self.c.execute("""SELECT id FROM comments ORDER BY skipCount ASC;""")
+        results = self.c.fetchall()
+        return results
+
+    def hasPlayed(self, commentID):
+        self.c.execute("""UPDATE comments SET skipCount = skipCount - 1
+                            WHERE id = %s;""", (int(commentID),))
 
     def getCategoryChildren(self, parent):
         """
