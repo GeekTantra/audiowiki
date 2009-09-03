@@ -1,5 +1,0 @@
-1	\N	Which team will win the college basketball champio
-2	\N	What activities will you do in Cambridge this spri
-3	\N	What do you think of the movie Watchmen?
-4	\N	What do you think of Obama's first few months in o
-5	\N	What do you do to prevent colds?
