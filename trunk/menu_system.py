@@ -9,7 +9,7 @@ if len(sys.argv) > 1:
     elif sys.argv[1] == 'man':
         DEBUG_AUTO = False
     else:
-        print 'Usage: '+sys.argv[0]+' [auto|man]'
+        print 'Usage: ' + sys.argv[0] + ' [auto|man]'
         print ''
         print 'Where no arguments implies the system is running in asterisk,'
         print 'auto runs the automated tests and man runs the keyboard-'
@@ -33,229 +33,240 @@ else:
     from asteriskinterface import *
 from database import *
 
-SOUND_DIR = '/var/lib/asterisk/sounds/'
+SOUND_DIR = '/var/lib/asterisk/sounds/audiowiki-beta' # New Sound Directory
+AST_SOUND_DIR = '/var/lib/asterisk/sounds' # New Sound Directory
 
-sys.setrecursionlimit(10000)
+sys.setrecursionlimit(15000)
 
 ##### State functions ######
 
 def login():
     """
-    Implements the login state.
+    Login: If the user's phone number (var 'user') is unrecognized,
+    the system stores it in the "user" table.
 
-    If the user is here for the first time, plays the greeting and
-    requires they create a personal greeting.
-
-    Everyone hears the login message.
+    Audio Files:
     """
-    #if not db.isUser(user):
-    #    playFile('first-time-message',{})
-    #while not db.isUser(user):
-    #    recordUserMessage()
-    if not db.isUser(user):
-        db.addContactedUser(user)
-    playFile('login',{})
+    if not db.isUser(user): # If the phone number calling the system is
+                            # unrecognized by the database, add the number
+                            # as a new user to table 'users'.
+        db.addUser(user)
+        newUserMessage = str(user) + " ADDED TO DATABASE"
+        debugPrint(newUserMessage) # Print message to Asterisk console. NOTE: You must run
+                                   # the agi-debug command at console before debug messages
+                                   # will appear.
+    elif db.isUser(user):
+        returningUserMessage = "RETURNING USER " + str(user)
+        debugPrint(returningUserMessage)
 
 def mainMenu():
     """
-    Implements the main menu state
+    Main Menu: All the available categories are played for the user, and he is free to
+    select what interests him. The moderator says "Press 1 for " and then the category
+    sound file is played. This system supports anywhere from 1 to 9 categories. Selecting
+    a category sends the user to a list of user-generated comments.
+    
+    Audio Files:
+    mainMenu-intro -- " "
+    mainMenu-outro -- "To hear these options again, please stay on the line. To 
+                       explore other options, press *."
+    star-for-moreInfo -- "Press * for more information about this system."
+    login-for-pfVersion -- "Welcome to Audio Wikipedia. To jump to a specific forum, please
+                            enter the forum key followed by pound. To browse public forums,
+                            press pound now, or wait on the line."    
+
+    NOTE: star-for-moreInfo is an optional message. Feel free to comment out
+    as necessary. See instructions below.
     """
+    goToPrivateForum()
+
     keyDict = newKeyDict()
-    keyDict['1'] = (RaiseKey,('1',))
-    keyDict['2'] = (RaiseKey,('2',))
-    keyDict['*'] = (RaiseKey,('*',))
+    #keyDict['*'] = (RaiseKey,('*',))
+
+    #playFile('star-for-moreOptions', keyDict)
 
     try:
         while True:
-            category = walkCategoryTree('main-menu-intro', 'main-menu-outro',
-                                        None, keyDict)
-            if category != '0':
-                break        
+            categoryKey = playCategoryMenu(None, 'mainMenu-outro', keyDict)            # w/o intro
+          # categoryKey = playCategoryMenu('mainMenu-intro','mainMenu-Outro', keyDict) # w/ intro
+            if categoryKey != '0':
+                break
     except KeyPressException, e:
-        if e.key == '1':
-            recentThreads()
-            return
-        elif e.key == '2':
-            popularThreads()
-            return
-        elif e.key == '*':
-            personalOptions()
-            return
-        else:
+        if e.key == '*':  
+            moreOptions()  #THIS METHOD HAS NOT YET BEEN IMPLEMENTED
+            return          
+        else:               
             raise
-    listThreads(category)
+    playCommentsInCategory(categoryKey, None)
     
-def recentThreads():
-    threads = db.getRecentThreads(0,100)
-    playThreadList(threads)
+def goToPrivateForum():
+    """
+    """
+    goToPrivForum = playFileGetKey('mainMenuIntro',6,20,{})
+    if goToPrivForum:
+        privateForumIntroFileName = db.getPrivateForumIntroFileName(goToPrivForum)
+        if privateForumIntroFileName:
+            playCommentsInCategory(goToPrivForum, privateForumIntroFileName)
+        else:
+            playFile('not-understood')
+            goToPrivateForum()
+
+def playCategoryMenu(introAudio, outroAudio, keyDict):
+    """
+    This part of the main menu plays the available category options for the user.
+    While listening to these options, he can listen to the comments in the category
+    by pressing the designated key for that category. This method plays the options
+    and returns the user's keypress.
     
-def popularThreads():
-    threads = db.getPopularThreads()
-    playThreadList(threads)
+    The intro file plays before the category options and the outro, plays afterward.
+    If you don't want an intro, supply the argument None. An outro is required to let
+    the user know that he has listened to all the available options.
 
-def listThreads(category):
-    threads = db.getCategoryThreads(category)
-    playThreadList(threads)
-
-def playThreadList(threadList):
-    if not threadList:
-        playFile('empty-category')
-        return
-    while True:
-        pageCount = int(len(threadList))/9 + 1
-        debugPrint(str(pageCount))
-        for i in xrange(pageCount):
-            currentKey = 1    
-            keyDict = newKeyDict()
-            for thread in threadList[(i*9):((i+1)*9)]:
-                keyDict[str(currentKey)] = (readThread,(thread,))
-                currentKey+=1
-
-            currentKey = 1
-            for thread in threadList[(i*9):((i+1)*9)]:
-                playThread(thread, currentKey, keyDict)
-                currentKey+=1
-
-def playThread(thread, key, keyDict):
+    Audio Files:
+    under-construction -- "We're sorry but this system is currently under construction.
+                           Please check back later! Thank You."
+    listening-to-comments -- "While listening to comments, press 1 to add a comment,
+                                or, press 2 to skip to the next one.
     """
-    Plays the thread's short category.
-    """
-    dbug = "PLAYING THREAD " + str(thread) + ", KEY " + str(key)
-    debugPrint(dbug)
-    playFile('press-'+str(key)+'-for',keyDict)
-    playFile(str(thread)+"/"+'thread-'+str(thread),keyDict)
-
-def walkCategoryTree(intro, outro, parent, keyDict):
-    """
-    Walks the category tree and returns id of the category selected.
-    Parent may be None for the main menu.
-    Intro may be None (outro should not be)
-    """
-    debugPrint("walk category tree def") 
-    parentKeyDict = keyDict
-    keyDict = dict(keyDict) # deep copy
-    children = db.getCategoryChildren(parent)
-    #Return if we're the deepest node
-    if len(children)==0:
-        return parent
-    
-    accessibleChildren = children[:7]
-
-    for i in xrange(len(accessibleChildren)):
-        keyDict[str(3+i)] = Nop
-
-    categoryKeys = [str(i) for i in xrange(3,len(accessibleChildren)+3)]
-    #FIXME: we may eventually want to play an additional file to say '0'
-    # brings you up a menu level; currently, main-menu-intro includes this
-    #refactor me... :(
-
-    try:
-        while True:
-            #Play intro
-            if intro:
-                res = playFile(intro,keyDict)
-                if res in categoryKeys:
-                    x = walkCategoryTree(intro,
-                                         outro,
-                                         accessibleChildren[int(res)-3],
-                                         parentKeyDict)
-                    if x == '0':
-                        continue
-                    else:
-                        return x
+    categoryKeys = db.getKeys() # Gets the keys corresponding to all the
+                                # available categories in the system from
+                                # the database.
+    if not categoryKeys:
+        debugPrint("NO CATEGORIES IN DATABASE")
+        while(True):
+            playFile('under-construction', keyDict)
+            playFile('wait-10')
+    debugPrint(str(categoryKeys))
+    for key in categoryKeys:
+        keyDict[str(key)] = (playCommentsInCategory, (key, 'listening-to-comments',))
+    while True:  # Menu = Intro + Category Options + Outro
+                 # Loop through this menu endlessly.
+        if introAudio:
+            userInput = playFile(introAudio, keyDict)
+            if userInput in categoryKeys:
+                return userInput
+        userInput = None
+        for key in categoryKeys:
             
-            #Play children nodes
-            res = None
-            for child, key in zip(accessibleChildren,
-                                  range(3,len(accessibleChildren)+3)):
-                res = playCategory(child, key, keyDict)
-                if res in categoryKeys:
-                    break
-            #If we received a relevant keypress, recurse
-            if res in categoryKeys:
-                x = walkCategoryTree(intro,
-                                     outro,
-                                     accessibleChildren[int(res)-3],
-                                     parentKeyDict)
-                if x == '0':
-                    continue
-                else:
-                    return x
-            #Play outro
-            res = playFileGetKey(outro, 10, 1, keyDict)
-            if res in categoryKeys:
-                x =  walkCategoryTree(intro,
-                                      outro,
-                                      accessibleChildren[int(res)-3],
-                                      parentKeyDict)
-                if x == '0':
-                    continue
-                else:
-                    return x        
-    except KeyPressException, e:
-        if e.key == '0':
-            #go up a level
-            return '0'
-        else:
-            raise
+            userInput = playCategoryTitle(key, keyDict) # Remember, key corresponds
+                                                        # to category and dialpad
+            if userInput in categoryKeys:
+                return userInput
+        userInput = None
+        userInput = playFile(outroAudio, keyDict)
+        userInput = playFile('breathing-13-seconds',keyDict)
+        if userInput in categoryKeys:
+            return userInput
 
-def playCategory(category, key, keyDict):
-    debugPrint("play category definition") 
-    res = playFile('press-'+str(key)+'-for',keyDict)
-    if res in keyDict:
-        return res
-    playFile('category-'+str(category),keyDict)
-    if res in keyDict:
-        return res
-    return ''
+def playCategoryTitle(categoryKey, keyDict): # We refer to the 'title' file as the sound file
+                                             # created by the administrator that describes
+                                             # the topic of that category.
+    """
+    Audio Files:
+    category-1-title -- a category title
+    category-2-title
+        .
+        .
+        .
+    category-9-title
+    """
+    titlePath = SOUND_DIR + "/" + str(categoryKey) + "/" + "category-" + str(categoryKey) + "-title"
+    numAudio = SOUND_DIR + "/" + "press-" + str(categoryKey) + "-for"
+    playFile(numAudio,keyDict)
+    return  playFile(titlePath, keyDict)
+
+def playCommentsInCategory(categoryKey, commentIntroAudio):
+    """
+    This method plays all the comments in a given categoroy. The order can be changed
+    by an Administrator. He can choose from the following options:
+        - most recent first
+        - most recent a user has heard
+            NOTE: This requires that the user has Caller-ID, which is used to
+                  uniquely identify callers.
+        - most listened to first
+        - shuffle (random) order
+
+    Audio Files:
+    empty-category -- "There aren't any comments in this category. Press 1 to add a comment.
+                       or press 0 to go back to the main menu."
+    end-of-comments -- "You have just heard all the comments in this category, to return to the
+                        main menu, please press 0. To add a comment press 1. To listen to the
+                        comments again, please stay on the line."
+    """
+    commentList = db.getCommentList(user, categoryKey)
     
-def readThread(thread):
-    """
-    Implements the read thread state.
-    """
-    debugPrint("READING COMMENTS IN THREAD")
     keyDict = newKeyDict()
-    keyDict['1'] = (addComment,(thread,))
+    keyDict['1'] = (addComment,(categoryKey,))
+    keyDict['2'] = (jumpToComment,(categoryKey,))
+#   keyDict['3'] = (shuffleComments(),('3',)) # Hidden, the moderator does not
+                                              # voice this option.
+                                              
+    debugString = "PLAYING CATEGORY " + str(categoryKey) + " FOR USER " + str(user)
 
-    playFile('comment-intro',keyDict)
-    playFile(str(thread)+'/'+'thread-'+str(thread),keyDict)
-    newComments = db.recentCommentLookup(user,thread)
-    for comment in newComments:
-        keyDict['5'] = (skipComment, (comment,))
-        debugPrint("THREAD: " + str(thread) + ", COMMENT: " + str(comment) + " IS BEING PLAYED")
-        commentListen(thread,comment,keyDict)
-        debugPrint("COMMENT FINISHED")
-        db.hasPlayed(comment)
-        db.updateUserCommentLocation(user,thread,comment)
-    allComments = db.allCommentLookup(thread)
-    for comment in allComments:
-        commentListen(thread,comment,keyDict)
+    if commentIntroAudio and len(commentList) != 0:
+        userInputDuringIntro = playFile(commentIntroAudio, keyDict)
+    if len(commentList) == 0:
+        playFile('empty-category', keyDict)
+        return
+    for commentID in commentList:
+        keyDict['#'] = (skipComment,(commentID,))
+        debugPrint("CATEGORY: "+str(categoryKey)+" COMMENT: "+str(commentID)+" BEING PLAYED")
+        userInput = str(playComment(commentID, categoryKey, keyDict))
+        if userInput == '0': # If user listens to comment w/o skipping, subtract one from skip_count
+            db.hasPlayed(commentID)
+        db.updateUserCursor(user, categoryKey, commentID)
+    # All comments are finished playing, alert the user to either wait, press 0 or listen
+    # to the comments again.
+    allComments = db.getAllComments(categoryKey)
+    FinishedPlayingMsg = "FINISHED PLAYING ALL COMMENTS IN CATEGORY " + str(categoryKey) \
+    + ", PRESS 0 TO RETURN TO MAIN MENU, 1 TO ADD A COMMENT OR NOTHING TO LISTEN AGAIN."
+    debugPrint(FinishedPlayingMsg)
+    playFile('end-of-comments', keyDict)
+    playFile('breathing-13-seconds',keyDict)
+    playCommentsInCategory(categoryKey, commentIntroAudio)
     RaiseZero()
 
+def jumpToComment(categoryKey):
+    jumpToThisCommentID = playFileGetKey('enter-commentID',6,5,{})
+    jumpingMessage = "JUMPING TO COMMENT " + jumpToThisCommentID
+    debugPrint(jumpingMessage)
+    db.updateUserCursor(user, categoryKey, jumpToThisCommentID)
+    playCommentsInCategory(categoryKey, None)
+
 def skipComment(commentID):
-    db.isSkipped(commentID)
-
-def commentListen(thread,comment,keyDict):
-    return playFile(str(thread)+'/'+str(comment), keyDict)
-
-def addComment(thread):
-    while True:
-        fname = recordFilePlayback('add-comment',60.0)
-        if fname:
-            break
-    commentNum = db.addComment(thread,user)
-    #BUG UNHANDLED RACE CONDITION (added to db before the file's moved)
-    os.rename(SOUND_DIR+fname+'.wav',SOUND_DIR+str(thread)+'/'+str(commentNum)+'.wav')
-    readThread(thread)
-
-def recordUserMessage():
-    while True:
-        fname = recordFilePlayback('record-greeting-request',10.0)
-        if fname:
-            break
-    os.rename(SOUND_DIR+fname+'.wav',SOUND_DIR+'user-'+user+'.wav')
-    db.addUser(user)
+    db.skipComment(int(commentID))
     
+def playComment(commentID, categoryKey, keyDict):
+    """
+    Plays the comment with id, commentID in category, categoryKey.    
+    """
+    debugString = "PLAYING COMMENT " + str(commentID) + " IN CATEGORY " + str(key)
+    debugPrint(debugString)
+    return playFile("audiowiki-beta/" + str(categoryKey) + "/" + str(commentID), keyDict)
+
+def addComment(categoryKey):
+    """
+    Allows the user to add a comment. This method first asks the user to record a comment,
+    using the recordFilePlayback method. Then, once the file has been recorded, it adds the
+    comment data (time added and commenter) to the database.
+    
+    Audio Files:
+    add-comment -- "Start your comment after the tone. When you're done, press #."
+    comment-added -- "Thank you. Your comment has been added."
+    """
+    while True:
+        commentTempFileName = recordFilePlayback("add-comment",300)
+        if commentTempFileName:
+            break
+    newCommentID = db.addComment(categoryKey, user)
+    if not os.path.lexists(SOUND_DIR+"/"+str(categoryKey)):
+        os.mkdir(SOUND_DIR + "/" + str(categoryKey))
+    os.rename(AST_SOUND_DIR+"/"+commentTempFileName+".wav",SOUND_DIR+"/"+str(categoryKey)+"/"+str(newCommentID)+".wav")
+    os.system("lame -h --abr 200 " + SOUND_DIR + "/" + str(categoryKey) + "/" + str(newCommentID) + ".wav " + \
+              SOUND_DIR + "/" + str(categoryKey) + "/" + str(newCommentID) + ".mp3")
+    playFile('comment-added')
+    sayNumber(newCommentID)
+    playCommentsInCategory(categoryKey, None)
 
 def recordFilePlayback(introFilename, recordLen):
     """
@@ -263,19 +274,23 @@ def recordFilePlayback(introFilename, recordLen):
     ms)
     Returns the filename created, or none if the file was deleted.
     Throws a keypress exception if an unrecognized key is pressed (e.g. 0)
+
+    Audio Files:
+    keep-or-rerecord -- "Press 1 to submit this comment or press 2 to re-record."
+    not-understood -- "Sorry, but I didn't understand that command."
     """
     keyDict = newKeyDict()
+    name = os.tmpnam()
+    name = name[len('/tmp/'):]
     try:
         playFile(introFilename,keyDict)
-        name = os.tmpnam()
-        name = name[len('/tmp/'):]
-        recordFile(name, '#01', recordLen , 5)
-        #Add options
-        playFile(name,keyDict)
+        recordFile(name, '#01', recordLen, 5)
+        # Add options
+        playFile(name, keyDict)
         while True:
             keyDict['1']= Nop
-            keyDict['2']= (removeTempFile,(SOUND_DIR+name+'.wav',))
-            key = playFileGetKey('keep-or-rerecord',5000,1,keyDict)
+            keyDict['2']= (removeTempFile,(AST_SOUND_DIR+"/"+name+'.wav',))
+            key = playFileGetKey('submit-or-rerecord', 5000, 1, keyDict)
             if key == '1':
                 return name
             elif key == '2':
@@ -284,55 +299,13 @@ def recordFilePlayback(introFilename, recordLen):
                 playFile('not-understood')
 
     except KeyPressException, e:
-        if name and os.path.exists(SOUND_DIR+name+'.wav'):
-            os.remove(SOUND_DIR+name+'.wav')
+        if name and os.path.exists(AST_SOUND_DIR+name+'.wav'):
+            debugPrint("STOPS WORKING HERE") # Could be a permissions issue with os.remove?
+            os.remove(AST_SOUND_DIR+name+'.wav')
         raise
 
-def personalOptions():
-    keyDict = newKeyDict()
-    keyDict['1'] = addTopic
-    keyDict['2'] = addFriend
-#   keyDict['3'] = recentPosts
-#   keyDict['4'] = broadCast
-#   keyDict['5'] = changeVoiceName
-    while True:
-        playFile('personal-options-intro', keyDict)
-
-def addTopic():
-    blankDict = newKeyDict()
-    chooseCategoryDict = newKeyDict()
-    subjName = recordFilePlayback('record-subject',20)
-    debugPrint(subjName)
-    commentName = recordFilePlayback('record-comment',60)
-    parentID = walkCategoryTree('choose-category','confirmation-sound', None, chooseCategoryDict)
-    db.addComment(parentID, user)
-    id = db.addThread(parentID, user) #should return ID
-    os.mkdir(SOUND_DIR+str(id)) #makes directory 
-    os.rename(SOUND_DIR+subjName+".wav", SOUND_DIR+str(id)+"/"+"thread-"+str(id)+".wav")
-    os.rename(SOUND_DIR+commentName+".wav", SOUND_DIR+str(id)+"/"+"comment-"+str(id)+".wav")
-    playFile('thanks-for-posting', blankDict)
-    #os.remove(SOUND_DIR+commentName+".wav")
-    #os.remove(SOUND_DIR+subjName+".wav")
-    personalOptions()
-	
-def addFriend():
-    blankDict = {}
-    keyDict = newKeyDict()
-    number = 0
-    number = playFileGetKey('enter-friend-number', 10, 11, blankDict)
-    keyDict['2'] = addFriend
-    #'Please enter your friend's phone number'
-    sayNumber(number)
-    while True:
-        playFile('confirm-or-retry', keyDict)
-
-def addFriendConfirm(number):
-    db.addFriend(number, user) #user must be users number
-    playFile('friend-added-thanks',newKeyDict())
-    personalOptions()
-
- 
 ### Procedural code starts here ###
+
 if __name__=='__main__':
     if DEBUG:
         db = Database(db_name='test',db_port=3306)
