@@ -19,6 +19,13 @@ class Database:
         self.c = self.db.cursor()
         self.c.execute('USE '+db_name+';')
 
+    def getLanguages(self):
+        self.c.execute(
+            "SELECT language, audioFile, digit FROM languages;")
+        results = self.c.fetchall()
+        languages = [i[0] for i in results]
+        return languages;
+
     def addUser(self, phoneNumberString):
         self.c.execute("INSERT INTO users (phone_number) " + \
                        "VALUES (%s);",(str(phoneNumberString),))
@@ -30,45 +37,25 @@ class Database:
         return count>0
 
     def getKeys(self):
-        self.c.execute("""SELECT `key` FROM categories;""")
+        self.c.execute("""SELECT `key` FROM categories ORDER BY `key` ASC;""")
         results = self.c.fetchall()
         keys = [i[0] for i in results]
         return keys
    
-    def getCommentList(self, phoneNumberString, categoryKey):        
-        usersCursors = self.getCursor(phoneNumberString)
-        if str(categoryKey) in usersCursors and phoneNumberString != 'Unavailable':
-                                                # If the user has listened to comments in
-                                                # this category before and has caller id,
-                                                # retrieve the comment list starting from                                                 # comment not listened to and ending with
-                                                # most recent to the least recent (oldest)
-                                                # comment.
-            self.c.execute(
-                "SELECT id FROM comments WHERE `key` = %s AND id > %s "+\
-                "ORDER BY time ASC;",
-                           (str(categoryKey), usersCursors[str(categoryKey)]))
-        else: # If the user has not listened to comments in this category before,
-              # retrieve the comment list starting from the most recent comment
-              # and ending with the least recent (oldest) comment.
-            self.c.execute("""SELECT id FROM comments
-                           WHERE `key` = %s ORDER BY time ASC;""",
-                           (str(categoryKey),))
+    def getCommentList(self, phoneNumberString, categoryKey, language):        
+        self.c.execute("SELECT id from comments WHERE `key` = %s AND " + \
+                          "language = %s ORDER BY time DESC;", \
+                       (str(categoryKey), language.lower(),))
         results = self.c.fetchall()
         commentList = [i[0] for i in results]
         debugPrint(str(commentList))
-        if commentList == []:
-            self.c.execute("""SELECT id FROM comments
-                           WHERE `key` = %s ORDER BY time ASC;""",
-                           (str(categoryKey),))
-            results = self.c.fetchall()
-            commentList = [i[0] for i in results]
-            debugPrint("YOU'VE LISTENED TO ALL THE COMMENTS, PLAYING FROM START")
-            debugPrint(str(commentList))
         return commentList
 
-    def getAllComments(self, categoryKey):
-        self.c.execute("""SELECT id FROM comments WHERE `key` = %s ORDER BY time ASC;""", \
-                       (str(categoryKey),))
+    def getAllComments(self, categoryKey, language):
+        debugPrint(str(language))
+        self.c.execute("""SELECT id FROM comments WHERE `key` = %s and
+                                language = %s ORDER BY time DESC;""", \
+                        (str(categoryKey), language.lower(),))
         results = self.c.fetchall()
         allComments = [i[0] for i in results]
         return allComments
@@ -97,9 +84,9 @@ class Database:
                             WHERE id = %s;""", (int(commentID),))
         debugPrint(str(commentID) + " HAS FINISHED PLAYING")
 
-    def addComment(self,categoryKey,phoneNum):
-        self.c.execute("INSERT INTO comments (`key`, commenter) VALUES (%s,%s);", \
-                       (categoryKey,phoneNum))
+    def addComment(self,categoryKey,phoneNum,language):
+        self.c.execute("INSERT INTO comments (`key`, commenter, language) VALUES (%s,%s, %s);", \
+                       (categoryKey,phoneNum,language))
         self.db.commit()
         return self.c.lastrowid
 
