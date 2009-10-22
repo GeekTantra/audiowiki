@@ -31,10 +31,11 @@ if DEBUG:
         from mockasteriskinterface import *
 else:
     from asteriskinterface import *
-from database import *
+    from database import *
 
 SOUND_DIR = '/var/lib/asterisk/sounds/audiowiki-beta' # New Sound Directory
 AST_SOUND_DIR = '/var/lib/asterisk/sounds' # New Sound Directory
+LANGUAGE = 'noLanguageSet'
 
 sys.setrecursionlimit(15000)
 
@@ -59,6 +60,13 @@ def login():
         returningUserMessage = "RETURNING USER " + str(user)
         debugPrint(returningUserMessage)
 
+def setLanguage(language):
+    global LANGUAGE
+    debugPrint(LANGUAGE)
+    LANGUAGE = language
+    debugPrint(LANGUAGE)
+    mainMenu()
+    
 def mainMenu():
     """
     Main Menu: All the available categories are played for the user, and he is free to
@@ -78,7 +86,28 @@ def mainMenu():
     NOTE: star-for-moreInfo is an optional message. Feel free to comment out
     as necessary. See instructions below.
     """
-    goToPrivateForum()
+
+    global LANGUAGE
+    debugPrint('LANGUAGE = ' + LANGUAGE)
+    languageKeyDict = newKeyDict()
+    languages = db.getLanguages()   # get list of all languages from database
+    debugPrint(str(languages))
+    for i in range(len(languages)): # when a language is selected,
+                                    # call the function by its name
+                                    # here, we set the function to the keypress
+	languageKeyDict[str(i+1)] = (setLanguage, (languages[i],))
+    if LANGUAGE == 'noLanguageSet':
+        while True:
+            for language in languages:
+                playFile(SOUND_DIR+'/public_sounds/press-'+str(languages.index(language)+1)+'-for',\
+                                                                         languageKeyDict)
+                playFile(SOUND_DIR+'/global/'+language+'/'+language,languageKeyDict)
+                playFile(SOUND_DIR+'/public_sounds/shortSilence',languageKeyDict)
+            playFile(SOUND_DIR+'/public_sounds/longSilence',languageKeyDict)
+
+    # goToPrivateForum()
+
+    # debugPrint("IN MAIN MENU, THE LANGUAGE IS " + language)
 
     keyDict = newKeyDict()
     #keyDict['*'] = (RaiseKey,('*',))
@@ -87,8 +116,10 @@ def mainMenu():
 
     try:
         while True:
-            categoryKey = playCategoryMenu(None, 'mainMenu-outro', keyDict)            # w/o intro
-          # categoryKey = playCategoryMenu('mainMenu-intro','mainMenu-Outro', keyDict) # w/ intro
+            categoryKey = playCategoryMenu(None, 'mainMenu-outro', keyDict)
+            # w/o intro
+          # categoryKey = playCategoryMenu('mainMenu-intro','mainMenu-Outro', keyDict)
+            # w/ intro
             if categoryKey != '0':
                 break
     except KeyPressException, e:
@@ -131,6 +162,7 @@ def playCategoryMenu(introAudio, outroAudio, keyDict):
     categoryKeys = db.getKeys() # Gets the keys corresponding to all the
                                 # available categories in the system from
                                 # the database.
+    debugPrint(str(categoryKeys))
     if not categoryKeys:
         debugPrint("NO CATEGORIES IN DATABASE")
         while(True):
@@ -147,7 +179,6 @@ def playCategoryMenu(introAudio, outroAudio, keyDict):
                 return userInput
         userInput = None
         for key in categoryKeys:
-            
             userInput = playCategoryTitle(key, keyDict) # Remember, key corresponds
                                                         # to category and dialpad
             if userInput in categoryKeys:
@@ -170,9 +201,11 @@ def playCategoryTitle(categoryKey, keyDict): # We refer to the 'title' file as t
         .
     category-9-title
     """
-    titlePath = SOUND_DIR + "/" + str(categoryKey) + "/" + "category-" + str(categoryKey) + "-title"
-    numAudio = SOUND_DIR + "/" + "press-" + str(categoryKey) + "-for"
-    playFile(numAudio,keyDict)
+    titlePath = SOUND_DIR + "/global/" + LANGUAGE + "/" + str(categoryKey) \
+                                + "/" + str(categoryKey) + "-title"
+    # numAudio = SOUND_DIR + "/" + LANGUAGE + "/narratedDigitOptions/press-" \
+    #                           + str(categoryKey) + "-for"
+    # playFile(numAudio,keyDict)
     return  playFile(titlePath, keyDict)
 
 def playCommentsInCategory(categoryKey, commentIntroAudio):
@@ -193,11 +226,12 @@ def playCommentsInCategory(categoryKey, commentIntroAudio):
                         main menu, please press 0. To add a comment press 1. To listen to the
                         comments again, please stay on the line."
     """
-    commentList = db.getCommentList(user, categoryKey)
+    debugPrint(str(categoryKey))
+    commentList = db.getCommentList(user, categoryKey, LANGUAGE)
     
     keyDict = newKeyDict()
     keyDict['1'] = (addComment,(categoryKey,))
-    keyDict['2'] = (jumpToComment,(categoryKey,))
+#   keyDict['2'] = (jumpToComment,(categoryKey,))
 #   keyDict['3'] = (shuffleComments(),('3',)) # Hidden, the moderator does not
                                               # voice this option.
                                               
@@ -211,13 +245,14 @@ def playCommentsInCategory(categoryKey, commentIntroAudio):
     for commentID in commentList:
         keyDict['#'] = (skipComment,(commentID,))
         debugPrint("CATEGORY: "+str(categoryKey)+" COMMENT: "+str(commentID)+" BEING PLAYED")
-        userInput = str(playComment(commentID, categoryKey, keyDict))
-        if userInput == '0': # If user listens to comment w/o skipping, subtract one from skip_count
-            db.hasPlayed(commentID)
-        db.updateUserCursor(user, categoryKey, commentID)
+        playComment(commentID, categoryKey, keyDict)
+        #userInput = str(playComment(commentID, categoryKey, keyDict))
+        #if userInput == '0': # If user listens to comment w/o skipping, subtract one \
+                             # from skip_count
+        #    db.hasPlayed(commentID)
+        #db.updateUserCursor(user, categoryKey, commentID)
     # All comments are finished playing, alert the user to either wait, press 0 or listen
     # to the comments again.
-    allComments = db.getAllComments(categoryKey)
     FinishedPlayingMsg = "FINISHED PLAYING ALL COMMENTS IN CATEGORY " + str(categoryKey) \
     + ", PRESS 0 TO RETURN TO MAIN MENU, 1 TO ADD A COMMENT OR NOTHING TO LISTEN AGAIN."
     debugPrint(FinishedPlayingMsg)
@@ -231,7 +266,7 @@ def jumpToComment(categoryKey):
     jumpingMessage = "JUMPING TO COMMENT " + jumpToThisCommentID
     debugPrint(jumpingMessage)
     db.updateUserCursor(user, categoryKey, jumpToThisCommentID)
-    playCommentsInCategory(categoryKey, None)
+    InCategory(categoryKey, None)
 
 def skipComment(commentID):
     db.skipComment(int(commentID))
@@ -242,7 +277,8 @@ def playComment(commentID, categoryKey, keyDict):
     """
     debugString = "PLAYING COMMENT " + str(commentID) + " IN CATEGORY " + str(key)
     debugPrint(debugString)
-    return playFile("audiowiki-beta/" + str(categoryKey) + "/" + str(commentID), keyDict)
+    return playFile("audiowiki-beta/global/" + LANGUAGE + "/" + str(categoryKey) \
+                    + "/" + str(commentID), keyDict)
 
 def addComment(categoryKey):
     """
@@ -258,14 +294,19 @@ def addComment(categoryKey):
         commentTempFileName = recordFilePlayback("add-comment",300)
         if commentTempFileName:
             break
-    newCommentID = db.addComment(categoryKey, user)
-    if not os.path.lexists(SOUND_DIR+"/"+str(categoryKey)):
-        os.mkdir(SOUND_DIR + "/" + str(categoryKey))
-    os.rename(AST_SOUND_DIR+"/"+commentTempFileName+".wav",SOUND_DIR+"/"+str(categoryKey)+"/"+str(newCommentID)+".wav")
-    os.system("lame -h --abr 200 " + SOUND_DIR + "/" + str(categoryKey) + "/" + str(newCommentID) + ".wav " + \
-              SOUND_DIR + "/" + str(categoryKey) + "/" + str(newCommentID) + ".mp3")
+    newCommentID = db.addComment(categoryKey, user,LANGUAGE)
+    # if not os.path.lexists(SOUND_DIR+"/"+str(categoryKey)):
+    #    os.mkdir(SOUND_DIR + "/" + str(categoryKey))
+    if not os.path.lexists(SOUND_DIR+"/global/"+LANGUAGE+"/"+str(categoryKey)+"/web"):
+         os.mkdir(SOUND_DIR+"/global/"+LANGUAGE+"/"+str(categoryKey)+"/web")
+         os.chmod(SOUND_DIR+"/global/"+LANGUAGE+"/"+str(categoryKey)+"/web",0777)
+    os.rename(AST_SOUND_DIR+"/"+commentTempFileName+".wav",SOUND_DIR+"/global/"+LANGUAGE+"/"+\
+                              str(categoryKey)+"/"+str(newCommentID)+".wav")
+    os.system("lame -h --abr 200 " + SOUND_DIR + "/global/"+LANGUAGE+"/" \
+                              + str(categoryKey) +"/"+str(newCommentID) + ".wav " + \
+              SOUND_DIR + "/global/" + LANGUAGE+"/"+ str(categoryKey) + "/web/" + str(newCommentID) \
+                              + ".mp3")
     playFile('comment-added')
-    sayNumber(newCommentID)
     playCommentsInCategory(categoryKey, None)
 
 def recordFilePlayback(introFilename, recordLen):
