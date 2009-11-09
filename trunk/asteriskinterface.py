@@ -45,6 +45,7 @@ def playFile (fname, keyDict = newKeyDict()):
     else:
         #if the user pressed a key...
         c = chr(int(result))
+        debugPrint("USER JUST PRESSED:" + c)
         if isinstance(keyDict[c],tuple):
             keyDict[c][0](*keyDict[c][1])
         else:
