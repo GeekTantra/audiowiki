@@ -243,14 +243,16 @@ def playCommentsInCategory(categoryKey, commentIntroAudio):
         playFile('empty-category', keyDict)
         return
     for commentID in commentList:
-        keyDict['#'] = (skipComment,(commentID,))
+        keyDict['2'] = (skipComment,(commentID,))
         debugPrint("CATEGORY: "+str(categoryKey)+" COMMENT: "+str(commentID)+" BEING PLAYED")
-        playComment(commentID, categoryKey, keyDict)
+        input = playComment(commentID, categoryKey, keyDict)
+        if input == '2': # When the user presses 2, skip to the next comment in commentList.
+            pass
         #userInput = str(playComment(commentID, categoryKey, keyDict))
         #if userInput == '0': # If user listens to comment w/o skipping, subtract one \
                              # from skip_count
         #    db.hasPlayed(commentID)
-        #db.updateUserCursor(user, categoryKey, commentID)
+        # db.updateUserCursor(user, categoryKey, commentID)
     # All comments are finished playing, alert the user to either wait, press 0 or listen
     # to the comments again.
     FinishedPlayingMsg = "FINISHED PLAYING ALL COMMENTS IN CATEGORY " + str(categoryKey) \
