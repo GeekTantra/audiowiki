@@ -1,0 +1,4 @@
+
+
+Note:
+The admin interface requires a hard or soft link to the Asterisk "sounds" directory. On the MA Audio Wiki server, it's located on /var/lib/asterisk/sounds.
