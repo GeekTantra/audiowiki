@@ -1,0 +1,8 @@
+
+X move comment with id $_GET['id'] to edited directory
+X upload new wave file into directory
+convert to mp3
+   lame --decode input.mp3 mid.wav
+   ./sox -V mid.wav -r 8000 -c 1 output.raw
+   string exec ( string $command [, array &$output [, int &$return_var ]] )
+X do mysql query, add one to edited field for $_GET['id'] comment
