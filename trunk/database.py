@@ -1,4 +1,4 @@
-#DB Functions
+#DB Functions:
 
 #import * safe
 import MySQLdb
