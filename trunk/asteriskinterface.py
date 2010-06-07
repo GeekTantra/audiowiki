@@ -1,6 +1,8 @@
 #interface to asterisk. Safe for import * ing.
 from utilities import *
+import time
 import re
+import sys
 
 def checkresult (params):
     """
@@ -33,11 +35,16 @@ def playFile (fname, keyDict = newKeyDict()):
     escapeDigits = ''
     for key in keyDict:
         escapeDigits += key
-    debugPrint("STREAM FILE %s \"%s\"\n" % (str(fname),escapeDigits))
-    sys.stdout.write("STREAM FILE %s \"%s\"\n" % (str(fname),escapeDigits))
-    sys.stdout.flush()
-    result = sys.stdin.readline().strip()      
-    result = checkresult(result)
+    done = 0
+    while done == 0:
+        mytime = time.time()
+        debugPrint("STREAM FILE %s \"%s\"\n" % (str(fname),escapeDigits))
+        sys.stdout.write("STREAM FILE %s \"%s\"\n" % (str(fname),escapeDigits))
+        sys.stdout.flush()
+        result = readline()      
+        result = checkresult(result)
+        if time.time() - mytime > 0.1:
+            done = 1
     if (not isinstance(result,str)) or result == '-1':
         return -1
     elif result == '0':
@@ -61,7 +68,8 @@ def recordFile (fname, stopDigits, timeout, silenceTimeout):
     silenceTimout is the silence time before the recording ends
     automatically in seconds
     """
-    ms_timeout = -1 #int(timeout*1000)
+    debugPrint("STARTING RECORD FILE")
+    ms_timeout = 180000 #int(timeout*1000)
     seconds_silenceTimeout = -1 #int(silenceTimeout)
     cmdString = "RECORD FILE %s wav %s %s BEEP s=%d\n" % (fname, \
                                                           stopDigits, \
@@ -70,7 +78,7 @@ def recordFile (fname, stopDigits, timeout, silenceTimeout):
     debugPrint(cmdString)
     sys.stdout.write(cmdString)
     sys.stdout.flush()
-    result = sys.stdin.readline().strip()
+    result = readline()
     result = checkresult(result)
     return result
 
@@ -79,14 +87,14 @@ def playFileGetKey (prompt, timelimit, digcount, keyDict):
     Plays a file to the user and waits for up to digcount keypresses during
     seconds.
     """
-    timelimit = int(timelimit*1000);
+    timelimit = int(timelimit*1000)
     
     sys.stderr.write("GET DATA %s %d %d\n" % (prompt, timelimit, digcount))
     sys.stderr.flush()
     sys.stdout.write("GET DATA %s %d %d\n" % (prompt, timelimit, digcount))
     sys.stdout.flush()
     
-    result = sys.stdin.readline().strip()
+    result = readline()
     result = checkresult(result)
 
     sys.stderr.write("digits are %s\n" % result)
@@ -110,5 +118,44 @@ def sayNumber(number):
     sys.stderr.flush()
     sys.stdout.write("SAY NUMBER %s \"\"\n" % str(number)) 
     sys.stdout.flush() 
-    result = sys.stdin.readline().strip() 
+    result = readline() 
     
+"""
+lastTime = 0.0
+# minimum delay between keypresses
+MIN_DELAY = 1.0
+def delayedReadline():
+    # read key
+    origResult = sys.stdin.readline().strip()
+    debugPrint('delayed read line: ' + origResult)
+    result = checkresult(origResult)
+    # copy logic from elsewhere to see if it's a key press
+    keypress = 0
+    if (not isinstance(result,str)) or result == '-1':
+        keypress = 0
+    elif result == '0':
+        keypress = 0
+    else:
+        # it is a key press
+        keypress = 1
+     # if we have returned a keypress recently, then just return '0'
+    global lastTime
+
+    if lastTime != 0 and keypress == 1 and time.time() - lastTime < MIN_DELAY:
+        debugPrint('returning ' + '200 result=0')
+        return '200 result=0'
+    elif keypress == 1:
+        # we are returning a keypress, so remember when we did this
+        lastTime = time.time()
+        debugPrint('returning keypress at ' + str(lastTime))
+        return origResult
+    else:
+        # return a non-keypress as-is
+        debugPrint('returning ' + origResult)
+        return origResult
+"""
+
+def readline():
+    result = sys.stdin.readline().strip()
+    debugPrint('read line: ' + result)
+    return result
