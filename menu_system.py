@@ -31,9 +31,11 @@ if DEBUG:
         from mockasteriskinterface import *
 else:
     from asteriskinterface import *
-    from databaseUpdate import *
+    from database import *
 
+language = 'kannada' # Default language is kannada
 SOUND_DIR = '/var/lib/asterisk/sounds/audiowikiIndia/'
+PROMPTS_DIR = SOUND_DIR + 'prompts/hindi/'
 AST_SOUND_DIR = '/var/lib/asterisk/sounds/'
 
 sys.setrecursionlimit(15000)
@@ -47,6 +49,7 @@ def login():
 
     Audio Files:
     """
+    db.newCall(user)
     if not db.isUser(user): # If the phone number calling the system is
                             # unrecognized by the database, add the number
                             # as a new user to table 'users'.
@@ -58,115 +61,93 @@ def login():
     elif db.isUser(user):
         returningUserMessage = "RETURNING USER " + str(user)
         debugPrint(returningUserMessage)
-    
+
 def mainMenu():
     """
-
     """
+    global language
+    debugPrint("STARTING MAIN MENU")
+    language = 'hindi'
+    debugPrint("LANGUAGE IS "+language)
     keyDict = newKeyDict()
-#    keyDict['*'] = (RaiseKey,('*',))
-
-    #playFile('star-for-moreOptions', keyDict)
-
-    playFile(SOUND_DIR+'welcome-message',keyDict)
-    """
-    Welcome to Audio Wiki!
-    """
-
+    keyDict['1'] = (addComment,())
+    keyDict['2'] = (playBack,('skip-post-1',))
     try:
+        playFile(PROMPTS_DIR+'welcome', keyDict)
         while True:
-            playStream()           
-    except KeyPressException, e:
-        if e.key == '*':  
-            debugPrint("Here")
-            addComment()
-            return          
-        else:               
-            raise
+            playFile(PROMPTS_DIR+'record-1', keyDict)
+            playFile(PROMPTS_DIR+'listen-2', keyDict)
+            playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) 
+    except KeyPressException, e:       
+        raise
 
-def playStream():
+def playBack(intro=None):
     keyDict = newKeyDict()
-    keyDict['*'] = (addComment,())
-    commentIDs = db.getCommentIDs()
-    if len(commentIDs) == 0:
-        return playFile(SOUND_DIR+'no-comments',keyDict)
-    playFile(SOUND_DIR+'instructions',keyDict)
-    """
-    This is a user generated audio stream. To skip to the next post, press 2.
-    """
-    for commentID in commentIDs:
-        keyDict['1'] = (skipComment,(commentID,))
-        commentFile = SOUND_DIR+str(commentID)
+    posts = db.getPostsInChannel('12345')
+    if len(posts) == 0:
+        return playFile(PROMPTS_DIR+'no-comments', keyDict)
+    playFile(PROMPTS_DIR+'mistake-0', keyDict)
+    playFile(PROMPTS_DIR+intro, keyDict)
+    for postID in posts:
+        keyDict['1'] = (skipComment,(postID,))
+        commentFile = SOUND_DIR+str(postID)
         keyPress = playFile(commentFile, keyDict)
         if keyPress == '1': # If user presses 1, skip to next comment.
             pass
-    playFile(SOUND_DIR+'stream-over', keyDict)
-    """
-    You've just heard all the comments on this stream. To hear it again, please
-    wait on the line.
-    """
+    playFile(PROMPTS_DIR+'for-older-posts')
+    keyDict2 = newKeyDict()
+    keyDict2['1'] = (addComment,())
+    keyDict2['2'] = (playBack,('skip-post-1',))
+    playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
+    while True:
+        playFile(PROMPTS_DIR+'record-1', keyDict2)
+        playFile(PROMPTS_DIR+'listen-2', keyDict2)
+        playFile(PROMPTS_DIR+'wait-5-seconds', keyDict2)
 
 def skipComment(commentID):
     debugPrint("SKIPPING COMMENT "+str(commentID))
     db.skipComment(int(commentID))
 
 def addComment():
-    """
-    
-    """
+    playFile(PROMPTS_DIR+'mistake-0')
     while True:
-        commentTempFileName = recordFilePlayback("add-comment",300)
-        """
-        Record your comment after the tone. Press 1 when you're done.
-        """
+        commentTempFileName = recordFileNoPlayback(PROMPTS_DIR+'record-message-beep',300)
         if commentTempFileName:
             break
-    newCommentID = db.addComment(user)
+    newCommentID = db.addCommentToChannel(user, '12345')
     os.rename(AST_SOUND_DIR+commentTempFileName+".wav", SOUND_DIR+str(newCommentID)+".wav")
     os.system("lame -h --abr 200 "+SOUND_DIR+str(newCommentID)+".wav "+SOUND_DIR+"/web/" \
                                                               + str(newCommentID)+".mp3")
-    playFile(SOUND_DIR+'comment-added')
-    """
-    Your comment is now available on this stream! Thanks for posting!
-    """
-    playStream()
-    
-def recordFilePlayback(introFilename, recordLen):
-    """
-    Plays the specified intro file. Records a file of specified length (in
-    ms)
-    Returns the filename created, or none if the file was deleted.
-    Throws a keypress exception if an unrecognized key is pressed (e.g. 0)
+    playFile(PROMPTS_DIR+'thank-you-submitted')
+    keyDict2 = newKeyDict()
+    keyDict2['1'] = (addComment,())
+    keyDict2['2'] = (playBack,('skip-post-1',))
+    while True:
+        playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
+        playFile(PROMPTS_DIR+'record-1', keyDict2)
+        playFile(PROMPTS_DIR+'listen-2', keyDict2)
+        playFile(PROMPTS_DIR+'wait-5-seconds', keyDict2)
 
-    Audio Files:
-    keep-or-rerecord -- "Press 1 to submit this comment or press 2 to re-record."
-    not-understood -- "Sorry, but I didn't understand that command."
-    """
+def recordFileNoPlayback(introFilename, recordLen=30000):
     keyDict = newKeyDict()
     name = os.tmpnam()
     name = name[len('/tmp/'):]
     try:
-        playFile(SOUND_DIR+introFilename,keyDict)
-        recordFile(name, '#01', recordLen, 5)
-        # Add options
-        playFile(name, keyDict)
-        while True:
-            keyDict['1']= Nop
-            keyDict['2']= (removeTempFile,(AST_SOUND_DIR+"/"+name+'.wav',))
-            key = playFileGetKey(SOUND_DIR+'submit-or-rerecord', 5000, 1, keyDict)
-            """
-            Press 1 to submit this comment, or press 2 to re-record.
-            """
-            if key == '1':
-                return name
-            elif key == '2':
-                return None
-            else:
-                playFile(SOUND_FILE+'not-understood')
-                """
-                I didn't catch that.
-                """
-
+        playFile(introFilename,keyDict)
+        recordFile(name, '#1', recordLen, 5)
+        # The following code makes it possible for the user to confirm his submission.
+        # playFile(name, keyDict)
+        #while True:
+        #    keyDict['1']= Nop
+        #    keyDict['2']= (removeTempFile,(AST_SOUND_DIR+"/"+name+'.wav',))
+        #    key = playFileGetKey(PROMPTS_DIR+'submit-or-rerecord', 5000, 1, keyDict)
+        #    if key == '1':
+        #        return name
+        #    elif key == '2':
+        #        return None
+        #    else:
+        #        playFile(PROMPTS_DIR+'not-understood')
+        return name
     except KeyPressException, e:
         if name and os.path.exists(AST_SOUND_DIR+name+'.wav'):
             os.remove(AST_SOUND_DIR+name+'.wav')
