@@ -1,9 +1,5 @@
-
-
-The admin interface requires a hard or soft link to the Asterisk "sounds" directory. On the Boston Audio Wiki server, it is:
-/var/lib/asterisk/sounds.
-
-In a database called 'audiowikiIndia', there needs to be a comments table, created by the following script:
+In a database called 'audiowikiIndia', there needs to be a comments
+table, created by the following script:
 
 DROP TABLE IF EXISTS `comments`;
 CREATE TABLE `comments` (
