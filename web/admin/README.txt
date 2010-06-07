@@ -1,5 +1,4 @@
-In a database called 'audiowikiIndia', there needs to be a comments
-table, created by the following script:
+In a database called 'audiowikiIndia', there needs to be a comments table, created by the following script:
 
 DROP TABLE IF EXISTS `comments`;
 CREATE TABLE `comments` (
