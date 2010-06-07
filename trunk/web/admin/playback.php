@@ -1,17 +1,19 @@
-<?php include("/var/www/html/admin/password_protect.php"); ?>
 <?php
-	$playFileOnLoad = $_POST['play'];
-	
-	if (!isset($playFileOnLoad)) {
+	$play = $_GET['play'];
+
+	if (!isset($play)) {
 		$as = 0;
 	} else {
 		$as = 1;
 	}
-
-	$station = '12345';//$_GET['station'];
+	
+	$station = '12345'; //$_GET['station'];
+	
+	
+	$date = date('Y-m-d');
 	
 	$view = $_POST['view'];
-	if (!isset($view)) { $view = 'all'; }
+	if (!isset($view)) { $view = 'published'; }
 	
     $username="python";
     $password="rock+bait";
@@ -35,17 +37,19 @@
 		
     $result = mysql_query($query);
     $num = mysql_num_rows($result);
+
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>CGNet Swara</title>
 
 <script type="text/javascript" src="Scripts/jquery.js"></script>
 <script type="text/javascript" src="Scripts/thickbox.js"></script>
-<script language='JavaScript' src='wimpy.js'></script>
+
 <link rel="stylesheet" href="css/thickbox.css" type="text/css" media="screen" />
 
 <style type="text/css">
@@ -59,16 +63,13 @@
     text-align: center;
 	width:100%;
 }
-
+date {
+	color:#AAAAAA;
+}
 #topLeft
 {
     top: 0px;
     left: 0px;
-}
-#bottomLeft
-{
-	position: fixed;
-	bottom: 0px;
 }
 body {
 	background-image: url(images/top_panel.png);
@@ -144,6 +145,7 @@ $(function() {
 	 );
 });
 </script>
+
 <script src="Scripts/swfobject_modified.js" type="text/javascript"></script>
 <script type="text/javascript" src="Scripts/audio-player.js"></script>  
 <script type="text/javascript">  
@@ -184,74 +186,21 @@ for (i = 0; i < field.length; i++)
 	field[i].checked = false ;
 }
 </script>
-
+<script type="text/javascript" language="javascript" src="niftyplayer.js"></script>
 </head>
 
 <body onload="unCheckAll(document.myform.selectedPost);" text="#333333" link="#666666" vlink="#666666" alink="#666666">
-<body onload="unCheckAll(document.myform.selectedPost);" text="#333333" link="#666666" vlink="#666666" alink="#666666">
-<div id="test" align="center">
-<a href="javascript:;" onClick="wimpy_addTrack(true,'sounds/audiowikiIndia/web/1061.mp3', '', '', '', '');"> play </a>
+<div class="visibleDiv" id="topLeft">
+	<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="165" height="38" id="niftyPlayer1" align="">
+	<param name=movie value="niftyplayer.swf?file=sounds/audiowikiIndia/web/<?php=$play?>.mp3&as=<?php=$as?>">
+	<param name=quality value=high>
+	<param name=bgcolor value=#FFFFFF>
+	<embed src="niftyplayer.swf?file=sounds/audiowikiIndia/web/<?php=$play?>.mp3&as=<?php=$as?>" quality=high bgcolor=#FFFFFF width="165" height="38" name="niftyPlayer1" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">
+	</embed>
+	</object>
 </div>
-<div id="wimpyTarget" align="center">
-<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0" width="133" height="31" id="wimpy" align="center">
-<param name="allowScriptAccess" value="always" />
-<param name="movie" value="http://audiowiki.no-ip.org/admin/wimpy.swf" />
-<param name="loop" value="false" />
-<param name="menu" value="false" />
-<param name="quality" value="high" />
-<param name="scale" value="noscale" />
-<param name="salign" value="lt" />
-<param name="bgcolor" value="#A0A0A0" />
-<param name="flashvars" value="wimpyApp=http://audiowiki.no-ip.org/admin/wimpy.php&wimpySkin=http://audiowiki.no-ip.org/admin/skins/skin_micro.xml&startPlayingOnload=yes&wimpySkin=http://audiowiki.no-ip.org/admin/skins/skin_micro.xml" />
-<param name="wmode" value="opaque" />
-<embed src="http://audiowiki.no-ip.org/admin/wimpy.swf" flashvars="wimpyApp=http://audiowiki.no-ip.org/admin/wimpy.php&wimpySkin=http://audiowiki.no-ip.org/admin/skins/skin_micro.xml&startPlayingOnload=yes&wimpySkin=http://audiowiki.no-ip.org/admin/skins/skin_micro.xml" loop="false" wmode="opaque" menu="false" quality="high" width="133" height="31" scale="noscale" salign="lt" name="wimpy" align="center" bgcolor="#94B2D1" allowScriptAccess="always" allowFullScreen="true" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
-</object>
-</div> 
-
-<script language="JavaScript"> 
-
-	var SwaraWimpy = new Object();
-	
-	
-	SwaraWimpy.wimpyWidth			= "133";
-	SwaraWimpy.wimpyHeight			= "31";
-	SwaraWimpy.wimpySkin			= "http://audiowiki.no-ip.org/admin/skins/skin_micro.xml";
-	SwaraWimpy.startupLogo			= "";
-	SwaraWimpy.startPlayingOnload	= "";
-	SwaraWimpy.bkgdColor			="#94B2D1" ;
-	
-	makeWimpyPlayer(SwaraWimpy);
-	
-</script>
 
 <p class="sample">CGNet Swara</p>
-<div class="visibleDiv" id="bottomLeft">
-<table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#666" style="color:#FFF">
-  <tr>
-    <td></td>
-    <td>
-    	  <INPUT TYPE="SUBMIT" name="Operation" onClick="document.pressed=this.value;return OnSubmitForm();" VALUE="Publish">
-    	  <INPUT TYPE="SUBMIT" name="Operation" onClick="document.pressed=this.value;return OnSubmitForm();" VALUE="Archive">
-    	  <INPUT TYPE="SUBMIT" name="Operation" onClick="document.pressed=this.value;return OnSubmitForm();" VALUE="Delete">
-    </td>
-    <td>
-          <FORM  name="post_view" id="post_view" ACTION="index.php" METHOD=POST onSubmit="return dropdown(this.gourl)" style="border:0;">
-          view:
-          <select name="view" onchange="document.post_view.submit();"><option value="published" <?php if ($view=='published') {echo 'selected';} ?>>Published Posts</option>
-            <option value="new" <?php if ($view=='new') {echo 'selected';} ?>>New Posts</option>
-            <option value="all" <?php if ($view=='all') {echo 'selected';} ?>>All Posts</option>
-          </select>
-          </FORM>
-    </td>
-    <td align="right">
-    <form enctype="multipart/form-data" action="uploadMp3.php?" method="POST">
-	  <input name="uploadMp3" type="file" /> 
-	    <input type="submit" value="Upload" />
-	</form>
-	</td>
-  </tr>
-</table>
-</div>
 
 
 <FORM name="myform" id="myform" onSubmit="return OnSubmitForm();" method="get">
@@ -286,7 +235,7 @@ while ($row = mysql_fetch_array($result)) {
 	"<tr height=\"35\" bgcolor=\"" . $color . "\">
 		<td width=\"2%\">
 		</td>
-		<td width=\"8%\">
+		<td width=\"2%\">
         	<input type=\"checkbox\" name=\"selectedPost[]\" id=\"selectedPost\" value=\"".$row['id']."\"> <br />
 		</td>
 		<td width=\"52%\"><$fontStyle id=\"" . $row['id'] . "\" class=\"edit\" style=\"$textcolor display: inline\">". $row['description'] . "</$fontStyle>
@@ -304,27 +253,78 @@ while ($row = mysql_fetch_array($result)) {
 		</td>
   	</tr>";
 */
+/*if ($row['time'] )
+2010-03-22 15:41:22
+Y-m-d
+*/
+
+// $date = $date
+$year = substr($date,-10,4);
+$day = substr($date,-2,2);
+$month = substr($date,-5,2);
+
+$dateOfPost = substr($row['time'],-19,10);
+$dayOfPost = substr($row['time'],-11,2);
+$monthOfPost = substr($row['time'],-14,2);
+$yearOfPost = substr($row['time'],-19,4);
+
+$daysAgo = $day-$dayOfPost;
+$monthsAgo = $month-$monthOfPost;
+$yearsAgo = $year-$yearOfPost;
+
+if ($daysAgo == 0 && $monthsAgo == 0 && $yearsAgo == 0) {
+	$displayPostDate = "Today";
+} else if ($daysAgo == 1 && $monthsAgo == 0 && $yearsAgo == 0) {
+	$displayPostDate = "Yesterday";
+} else if ($daysAgo > 1 && $monthsAgo == 0 && $yearsAgo == 0) {
+	$displayPostDate = $daysAgo . " days ago";
+} else if ($monthsAgo == 1 && $yearsAgo == 0) {
+	$displayPostDate = "Last month";
+} else if ($monthsAgo > 1 && $yearsAgo == 0) {
+	$displayPostDate = $monthsAgo . " months ago";
+} else if ($yearsAgo == 1) {
+	$displayPostDate = "Last year";
+} else if ($yearsAgo > 1) {
+	$displayPostDate = $yearsAgo . " years ago";
+}
+
+$displayPostDate = "<date>".$displayPostDate."</date>";
 
 	echo 
 	"<tr height=\"35\" bgcolor=\"" . $color . "\">
-		<td width=\"3%\">
-		</td>
 		<td width=\"2%\">
-        	<input type=\"checkbox\" name=\"selectedPost[]\" id=\"selectedPost\" value=\"".$row['id']."\"> <br />
 		</td>
-		<td width=\"80%\"><$fontStyle id=\"" . $row['id'] . "\" class=\"edit\" style=\"$textcolor display: inline\">". $row['description'] . "</$fontStyle>
-		<td width=\"1%\">
-		</td>
+		<td width=\"93%\"><$fontStyle id=\"" . $row['id'] . "\" 
+class=\"\" style=\"$textcolor display: inline\">". $row['description'] . " " . $displayPostDate . "</$fontStyle>
 		</td>		
-    		<td width=\"10%\">
-				<a href=\"JavaScript:;\" onClick=\"wimpy_addTrack(true, 'sounds/audiowikiIndia/web/".$row['id'].".mp3', '', '', '', '');\"> play </a>
-				<a href=\"confirmDeleteIndia.php?id=".$row['id']."&fileDescription=".$row['description']."\">delete </a>
-				<a href=\"replace.php?id=".$row['id']."&confirmed=0\">edit</a>
-		</td>
-		<td width=\"2%\">
+    		<td width=\"5%\" align=\"center\">
+				<a href=\"javascript:niftyplayer('niftyPlayer1').loadAndPlay('sounds/audiowikiIndia/web/".$row['id'].".mp3')\" title=\"Post ID: ".$row['id']."\">play</a>
+			</td>
 		</td>
   	</tr>";
 	}
+// The following code is from the moderator version.
+/*
+	echo 
+	"<tr height=\"35\" bgcolor=\"" . $color . "\">
+		<td width=\"2%\">
+		</td>
+		<td width=\"8%\">
+        	<input type=\"checkbox\" name=\"selectedPost[]\" id=\"selectedPost\" value=\"".$row['id']."\"> <br />
+		</td>
+		<td width=\"77%\"><$fontStyle id=\"" . $row['id'] . "\" class=\"edit\" style=\"$textcolor display: inline\">". $row['description'] . "</$fontStyle>
+		</td>		
+    		<td width=\"3%\">
+				<a href=\"javascript:niftyplayer('niftyPlayer1').loadAndPlay('sounds/audiowikiIndia/web/".$row['id'].".mp3')\">play</a>
+			</td>
+		<td width=\"3%\"><a href=\"confirmDeleteIndia.php?id=".$row['id']."&fileDescription=".$row['description']."\">
+			<img src=\"images/delete.png\" alt=\"delete comment\""."width=\"20\" height=\"20\" align=\"absmiddle\" /></a>
+		</td>
+    	<td width=\"5%\"><a href=\"replace.php?id=".$row['id']."&confirmed=0\">edit</a>
+		</td>
+  	</tr>";
+	}
+*/
 	mysql_close();
 ?>
 </form>
