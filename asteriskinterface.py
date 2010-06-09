@@ -26,6 +26,11 @@ def checkresult (params):
         sys.stderr.flush()
         return -2
 
+def hangup ():
+    debugPrint("HANGUP\n")
+    sys.stdout.write("HANGUP\n")
+    sys.stdout.flush()
+
 def playFile (fname, keyDict = newKeyDict()):
     """
     Plays the file "fname". keyDict is a dictionary mapping characters from

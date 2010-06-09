@@ -74,10 +74,11 @@ def mainMenu():
     keyDict['2'] = (playBack,('skip-post-1',))
     try:
         playFile(PROMPTS_DIR+'welcome', keyDict)
-        while True:
+        for i in range(1,4):
             playFile(PROMPTS_DIR+'record-1', keyDict)
             playFile(PROMPTS_DIR+'listen-2', keyDict)
             playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) 
+        hangup()
     except KeyPressException, e:       
         raise
 
@@ -88,7 +89,11 @@ def playBack(intro=None):
         return playFile(PROMPTS_DIR+'no-comments', keyDict)
     playFile(PROMPTS_DIR+'mistake-0', keyDict)
     playFile(PROMPTS_DIR+intro, keyDict)
+    count = 0
     for postID in posts:
+        count = count + 1
+        if (count==5):
+            break
         keyDict['1'] = (skipComment,(postID,))
         commentFile = SOUND_DIR+str(postID)
         keyPress = playFile(commentFile, keyDict)
@@ -99,10 +104,11 @@ def playBack(intro=None):
     keyDict2['1'] = (addComment,())
     keyDict2['2'] = (playBack,('skip-post-1',))
     playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
-    while True:
+    for i in range(1,4):
         playFile(PROMPTS_DIR+'record-1', keyDict2)
         playFile(PROMPTS_DIR+'listen-2', keyDict2)
         playFile(PROMPTS_DIR+'wait-5-seconds', keyDict2)
+    hangup()
 
 def skipComment(commentID):
     debugPrint("SKIPPING COMMENT "+str(commentID))
@@ -122,11 +128,12 @@ def addComment():
     keyDict2 = newKeyDict()
     keyDict2['1'] = (addComment,())
     keyDict2['2'] = (playBack,('skip-post-1',))
-    while True:
+    for i in range(1,4):
         playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
         playFile(PROMPTS_DIR+'record-1', keyDict2)
         playFile(PROMPTS_DIR+'listen-2', keyDict2)
         playFile(PROMPTS_DIR+'wait-5-seconds', keyDict2)
+    hangup()
 
 def recordFileNoPlayback(introFilename, recordLen=30000):
     keyDict = newKeyDict()
