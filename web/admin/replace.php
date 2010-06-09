@@ -16,7 +16,8 @@
 
 <?php
 
-$id = $_GET['id'];
+$id =$_GET['id'];
+
 
 if ($_GET['confirmed'] == 0) { ?>
 <center>
@@ -38,7 +39,10 @@ AudioPlayer.embed("audioplayer_<?php=$id?>", {soundFile: "sounds/audiowikiIndia/
 </table>
 <table width="40%" border="0" align="center">
   <tr>
-    <td align="center"><h1><strong><a href="replace.php?id=<?php=$_GET['id'] ?>&confirmed=1">Yes</a></strong></h1></td>
+    <?php
+	echo
+	"<td align=\"center\"><h1><strong><a href=\"replace.php?id=".$id."&confirmed=1\">Yes</a></strong></h1></td>";
+	?>
     <td align="center"><h1><strong><a href="index.php">No</a></strong></h1></td>
   </tr>
 </table>
@@ -51,21 +55,33 @@ AudioPlayer.embed("audioplayer_<?php=$id?>", {soundFile: "sounds/audiowikiIndia/
 </p>
 <table cellpadding="40">
   <tr>
-<td align="center">
-<a href="downloadComment.php?id=<?php=$_GET['id']?>&path=sounds/audiowikiIndia/web/<?php=$_GET['id']?>.mp3">
+
+  <?php
+
+  echo
+  "<td align=\"center\">
+<a href=\"downloadComment.php?id=".$id."&path=sounds/audiowikiIndia/web/".$id.".mp3\">";
+
+?>
 Click here to download the file (mp3 format).</a></td>
 </tr>
 <tr>
 <td>
 <h1>Once you've edited this post (we recommend using <a href=http://audacity.sourceforge.net/download/>Audacity</a>), <br> upload the mp3 here:</h1>
 <center>
-<form enctype="multipart/form-data" action="replace.php?confirmed=2&id=<?php=$_GET['id']?>" method="POST">
-  <p><input name="uploadedComment" type="file" /> 
-    <input type="submit" value="Upload" />
+
+<?php
+
+echo
+"<form enctype=\"multipart/form-data\" action=\"replace.php?confirmed=2&id=".$id." method=\"POST\">
+  <p><input name=\"uploadedComment\" type=\"file\" /> 
+    <input type=\"submit\" value=\"Upload\" />
   </p>
 </form> 
 <br />
-</tr>
+</tr>"
+?>
+
 </table>
 
 <p>
