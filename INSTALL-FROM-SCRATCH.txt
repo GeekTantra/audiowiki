@@ -10,7 +10,7 @@ timezone = Asia/Kolkata
 * Reboot
 
 * Basic setup
-yum install -y emacs mysql mysql-server wget gcc gcc-c++ bison libtermcap-devel newt newt-devel ncurses ncurses-devel svn zlib zlib-devel openssl openssl-devel kernel-devel httpd php-mysql php
+yum install -y emacs mysql mysql-server wget gcc gcc-c++ bison libtermcap-devel newt newt-devel ncurses ncurses-devel svn zlib zlib-devel openssl openssl-devel kernel-devel httpd php-mysql php MySQL-python
 yum groupinstall -y "MySQL Database"
 
 * Disable firewall

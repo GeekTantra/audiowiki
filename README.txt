@@ -9,3 +9,7 @@ directory):
 
 2.
 Copy or customize ./extensions.conf to /etc/asterisk/
+
+3.
+Establish this symlink:
+ln -s ../sound\ files/sounds/sounds/audiowikiIndia web/sounds
