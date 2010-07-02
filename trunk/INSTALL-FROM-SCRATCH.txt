@@ -1,0 +1,153 @@
+HOW TO SETUP ON CLEAN MACHINE:
+
+* Install Fedora 13 using LiveCD
+If you get blank screen, on boot hit ESC, then TAB, then add "nomodeset" option to boot
+hostname = swara.no-ip.org
+timezone = Asia/Kolkata
+
+* Install all updates (a dozen security updates; hundreds of other updates)
+
+* Reboot
+
+* Basic setup
+yum install -y emacs mysql mysql-server wget gcc gcc-c++ bison libtermcap-devel newt newt-devel ncurses ncurses-devel svn zlib zlib-devel openssl openssl-devel kernel-devel httpd php-mysql php
+yum groupinstall -y "MySQL Database"
+
+* Disable firewall
+System -> Administration -> Firewall, Disable, Apply
+
+* Disable SELinux
+edit /etc/selinux/config, change "enforcing" to "permissive"
+
+* Reboot
+
+* Install DAHDI drivers from source (Fedora package didn't have B410P driver)
+wget http://downloads.digium.com/pub/telephony/dahdi-linux-complete/dahdi-linux-complete-current.tar.gz
+tar -zxvf dahdi-linux-complete-current.tar.gz
+cd dahdi-linux-complete-*
+make
+make install
+make config
+
+* Install Asterisk from source
+Find the most recent version of Asterisk from http://downloads.asterisk.org/pub/telephony/asterisk
+For example:
+wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-1.6.2.9.tar.gz
+tar -zxvf asterisk-*.tar.gz
+cd asterisk-*
+./configure --disable-xmldoc
+make menuselect
+make
+make install
+make samples
+
+* Check if Digium cards(s) recognized
+lspci -n
+look for "d161"
+
+* Configure Digium card(s)
+
+For TDM410:
+-----------
+Follow directions in http://docs.digium.com/TDM410/analog410series_manual.pdf (from page 38)
+For example:
+  Edit /etc/dahdi/system.conf
+  loadzone = in
+  defaultzone=in
+  fxsks=1
+  echocanceller=mg2,1
+
+modprobe wctdm24xxp
+dahdi_cfg -vv
+dmesg
+
+add to /etc/asterisk/chan_dahdi.conf:
+; TDM410 Card
+; General
+usecallerid=yes
+hidecallerid=no
+callwaiting=yes
+threewaycalling=yes
+transfer=yes
+echocancel=yes
+echocancelwhenbridged=yes
+rxgain=0.0
+txgain=0.0
+; FXO Modules
+group=1
+echocancel=yes
+signalling=fxs_ks
+context=Analog
+channel=1
+
+add to /etc/asterisk/extensions.conf:
+[Analog]
+exten => s,1,Answer
+exten => s,2,Playback(hello-world)
+exten => s,3,Hangup
+
+For B410P:
+----------
+Follow directions in http://docs.digium.com/B410P/b410p-user-manual.pdf (from page 30)
+For example:
+  Edit /etc/dahdi/system.conf
+  loadzone = in
+  defaultzone=in
+  span=1,1,0,ccs,ami
+  bchan=1,2
+  hardhdlc=3
+  span=2,2,0,ccs,ami
+  bchan=4,5
+  hardhdlc=6
+
+modprobe wcb4xxp
+dahdi_cfg -vv
+dmesg
+
+* Start services on boot
+service sshd start
+service httpd start
+service mysqld start
+chkconfig sshd on
+chkconfig httpd on
+chkconfig mysqld on
+
+* Setup mysqld
+/usr/bin/mysql_secure_installation
+yes to every question
+
+* Checkout audiowiki code
+svn checkout https://audiowiki.googlecode.com/svn/trunk audiowiki
+Note: changes can be committed as follows:
+svn commit -m "commit message" --username YOUR-GOOGLE-USERNAME
+
+* Install audiowiki by following directions in audiowiki/README.TXT
+
+* Setup database and import from backup copy
+mysql -u root -p
+create database audiowikiIndia;
+mysql -u root -p < OLD-DATABASE-DUMP.sql
+
+Note: database can be exported by:
+mysqldump -u ... -p ... audiowikiIndia > audiowikiIndia.sql
+add "use audiowikiIndia;" at top line of audiowikiIndia.sql
+
+* Fix permissions for web access
+chmod +x /home/
+chmod +x /home/swara/
+chmod +x /home/swara/audiowiki
+chmod +x /home/swara/audiowiki/web/
+chmod +x /home/swara/audiowiki/web/admin
+
+* Fix permissions for database access
+mysql -u root -p
+use audiowikiIndia;
+grant all privileges on audiowikiIndia.* to python@localhost identified by 'rock+bait';
+
+* Migrate sound files from backup
+If you are restoring sound files from OLD_AUDIOWIKI, do so as follows:
+cp OLD_AUDIOWIKI/sound\ files/sounds/sounds/audiowikiIndia/*.wav audiowiki/sound\ files/sounds/sounds/audiowikiIndia
+cp OLD_AUDIOWIKI/sound\ files/sounds/sounds/audiowikiIndia/web/*.mp3 audiowiki/sound\ files/sounds/sounds/audiowikiIndia/web
+
+* Install LAME
+Download source from Sourceforge; compile and install
