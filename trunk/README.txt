@@ -7,5 +7,5 @@ directory):
 /var/lib/asterisk/sounds --> audiowiki/sound files/sounds/sounds
 /var/lib/asterisk/agi-bin --> audiowiki
 
-3.
+2.
 Copy or customize ./extensions.conf to /etc/asterisk/
