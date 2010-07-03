@@ -79,14 +79,18 @@ threewaycalling=yes
 transfer=yes
 echocancel=yes
 echocancelwhenbridged=yes
-rxgain=0.0
-txgain=0.0
 ; FXO Modules
 group=1
+rxgain=10.0
+txgain=10.0
 echocancel=yes
 signalling=fxs_ks
 context=Analog
 channel=1
+
+Note: adjust rxgain and txgain (receive and transmit gain,
+respectively) to match your preferences.  On our system, the volume
+was a little low by default, so we boosted it up.
 
 add to /etc/asterisk/extensions.conf:
 [Analog]
@@ -105,6 +109,8 @@ dmesg
 add to /etc/asterisk/chan_dahdi.conf:
 ; Digital card
 group=2
+rxgain=0.0
+txgain=0.0
 signalling=bri_cpe_ptmp
 switchtype=euroisdn
 context=Digital
