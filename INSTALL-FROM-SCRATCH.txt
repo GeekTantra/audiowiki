@@ -29,6 +29,11 @@ make
 make install
 make config
 
+* Disable hfcmulti module, which is mistaken for DAHDI module
+append "blacklist hfcmulti" to /etc/modprobe.d/blacklist.conf
+
+* Reboot
+
 * Install Asterisk from source
 Find the most recent version of Asterisk from http://downloads.asterisk.org/pub/telephony/asterisk
 For example:
@@ -104,6 +109,25 @@ modprobe wcb4xxp
 dahdi_cfg -vv
 dmesg
 
+add to /etc/asterisk/chan_dahdi.conf:
+; Digital card
+group=2
+signalling=bri_cpe
+switchtype=euroisdn
+context=Digital
+echocancel=yes
+channel => 5,6,7,8,9,10,11,12,13,14,15,16
+
+[Digital]
+exten => s,1,Answer
+exten => s,2,Playback(hello-world)
+exten => s,3,Hangup
+
+ALTERNATELY (for both):
+-----------------------
+dahdi_genconf
+edit /etc/dahdi/system.conf to change zones from us to in
+
 * Start services on boot
 service sshd start
 service httpd start
@@ -137,6 +161,7 @@ chmod +x /home/
 chmod +x /home/swara/
 chmod +x /home/swara/audiowiki
 chmod +x /home/swara/audiowiki/web/
+chmod +x /home/swara/audiowiki/web/admin
 chmod +x /home/swara/audiowiki/web/admin
 
 * Fix permissions for database access
