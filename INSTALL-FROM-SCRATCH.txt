@@ -34,6 +34,12 @@ append "blacklist hfcmulti" to /etc/modprobe.d/blacklist.conf
 
 * Reboot
 
+* Install libpri from source
+Find most recent version in http://downloads.asterisk.org/pub/telephony/libpri
+For example, http://downloads.asterisk.org/pub/telephony/libpri/libpri-1.4.11.3.tar.gz
+make
+make install
+
 * Install Asterisk from source
 Find the most recent version of Asterisk from http://downloads.asterisk.org/pub/telephony/asterisk
 For example:
@@ -52,15 +58,12 @@ look for "d161"
 
 * Configure Digium card(s)
 
+dahdi_genconf
+edit /etc/dahdi/system.conf to change zones from us to in
+
 For TDM410:
 -----------
-Follow directions in http://docs.digium.com/TDM410/analog410series_manual.pdf (from page 38)
-For example:
-  Edit /etc/dahdi/system.conf
-  loadzone = in
-  defaultzone=in
-  fxsks=1
-  echocanceller=mg2,1
+(Instructions also available at http://docs.digium.com/TDM410/analog410series_manual.pdf)
 
 modprobe wctdm24xxp
 dahdi_cfg -vv
@@ -93,17 +96,7 @@ exten => s,3,Hangup
 
 For B410P:
 ----------
-Follow directions in http://docs.digium.com/B410P/b410p-user-manual.pdf (from page 30)
-For example:
-  Edit /etc/dahdi/system.conf
-  loadzone = in
-  defaultzone=in
-  span=1,1,0,ccs,ami
-  bchan=1,2
-  hardhdlc=3
-  span=2,2,0,ccs,ami
-  bchan=4,5
-  hardhdlc=6
+(Instructions also available at http://docs.digium.com/B410P/b410p-user-manual.pdf)
 
 modprobe wcb4xxp
 dahdi_cfg -vv
@@ -123,11 +116,6 @@ exten => s,1,Answer
 exten => s,2,Playback(hello-world)
 exten => s,3,Hangup
 
-ALTERNATELY (for both):
------------------------
-dahdi_genconf
-edit /etc/dahdi/system.conf to change zones from us to in
-
 * Start services on boot
 service sshd start
 service httpd start
@@ -135,6 +123,13 @@ service mysqld start
 chkconfig sshd on
 chkconfig httpd on
 chkconfig mysqld on
+
+* If using analog card, improve busy detection
+Edit /etc/asterisk/chand_dahdi.conf
+answeronpolarityswitch=yes
+busydetect=yes
+busycount=6
+busypattern=750,750
 
 * Setup mysqld
 /usr/bin/mysql_secure_installation
