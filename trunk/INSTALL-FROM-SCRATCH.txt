@@ -105,16 +105,21 @@ dmesg
 add to /etc/asterisk/chan_dahdi.conf:
 ; Digital card
 group=2
-signalling=bri_cpe
+signalling=bri_cpe_ptmp
 switchtype=euroisdn
 context=Digital
 echocancel=yes
-channel => 5,6,7,8,9,10,11,12,13,14,15,16
+channel=>5,6,8,9
+
+Note: replace channel numbers with the actual voice channels you have
+plugged in (might be more or fewer; check in /etc/dahdi/system.conf)
 
 [Digital]
-exten => s,1,Answer
-exten => s,2,Playback(hello-world)
-exten => s,3,Hangup
+exten => YOUR-DIGITAL-PHONE-NUMBER-HERE,1,Answer
+exten => YOUR-DIGITAL-PHONE-NUMBER-HERE,2,Playback(hello-world)
+exten => YOUR-DIGITAL-PHONE-NUMBER-HERE,3,Hangup
+
+Note: replace "your digital phone number" with actual number above.
 
 * Start services on boot
 service sshd start

@@ -50,6 +50,7 @@ def login():
     Audio Files:
     """
     db.newCall(user)
+    debugPrint("detected caller id="+user)
     if not db.isUser(user): # If the phone number calling the system is
                             # unrecognized by the database, add the number
                             # as a new user to table 'users'.
@@ -190,7 +191,7 @@ if __name__=='__main__':
             sys.stderr.write(" -- %s = %s\n" % (key, env[key]))
             sys.stderr.flush()
         db = Database()
-        user = env['agi_calleridname']
+        user = env['agi_callerid']
     login()
     while True:
         try:
