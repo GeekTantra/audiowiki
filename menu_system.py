@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #Menu system
+import smtplib
 import sys
+import stopwatch
 if len(sys.argv) > 1:
     DEBUG = True
     if sys.argv[1] == 'auto':
@@ -67,12 +69,22 @@ def mainMenu():
     """
     """
     global language
+    callid = db.getID()
+    # callid = int(callid) + 1 
+    tmm = stopwatch.Timer()
     debugPrint("STARTING MAIN MENU")
     language = 'hindi'
     debugPrint("LANGUAGE IS "+language)
     keyDict = newKeyDict()
     keyDict['1'] = (addComment,())
     keyDict['2'] = (playBack,('skip-post-1',))
+    keyDict['3'] = (invalidDigit,(3, 'Main Menu', tmm,))
+    keyDict['4'] = (invalidDigit,(4, 'Main Menu', tmm,))
+    keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
+    keyDict['6'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
+    keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
+    keyDict['9'] = (invalidDigit,(9, 'Main Menu', tmm,))
     try:
         playFile(PROMPTS_DIR+'welcome', keyDict)
         for i in range(1,4):
@@ -92,18 +104,35 @@ def playBack(intro=None):
     playFile(PROMPTS_DIR+intro, keyDict)
     count = 0
     for postID in posts:
+        tpb = stopwatch.Timer()
         count = count + 1
         if (count==5):
             break
-        keyDict['1'] = (skipComment,(postID,))
+        keyDict['1'] = (skipComment,(postID, tpb))
+        keyDict['3'] = (invalidDigit,(3, 'Playback', tpb,))
+        keyDict['4'] = (invalidDigit,(4, 'Playback', tpb,))
+        keyDict['5'] = (invalidDigit,(5, 'Playback', tpb,))
+        keyDict['6'] = (invalidDigit,(6, 'Playback', tpb,))
+        keyDict['7'] = (invalidDigit,(7, 'Playback', tpb,))
+        keyDict['8'] = (invalidDigit,(8, 'Playback', tpb,))
+        keyDict['9'] = (invalidDigit,(9, 'Playback', tpb,))
         commentFile = SOUND_DIR+str(postID)
         keyPress = playFile(commentFile, keyDict)
         if keyPress == '1': # If user presses 1, skip to next comment.
             pass
+        db.addPlaybackEvent(postID, tpb)
+    tpbm = stopwatch.Timer()
     playFile(PROMPTS_DIR+'for-older-posts')
     keyDict2 = newKeyDict()
     keyDict2['1'] = (addComment,())
     keyDict2['2'] = (playBack,('skip-post-1',))
+    keyDict2['3'] = (invalidDigit,(3, 'Main Menu after Playback', tpbm,))
+    keyDict2['4'] = (invalidDigit,(4, 'Main Menu after Playback', tpbm,))
+    keyDict2['5'] = (invalidDigit,(5, 'Main Menu after Playback', tpbm,))
+    keyDict2['6'] = (invalidDigit,(6, 'Main Menu after Playback', tpbm,))
+    keyDict2['7'] = (invalidDigit,(7, 'Main Menu after Playback', tpbm,))
+    keyDict2['8'] = (invalidDigit,(8, 'Main Menu after Playback', tpbm,))
+    keyDict2['9'] = (invalidDigit,(9, 'Main Menu after Playback', tpbm,))
     playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
     for i in range(1,4):
         playFile(PROMPTS_DIR+'record-1', keyDict2)
@@ -111,9 +140,27 @@ def playBack(intro=None):
         playFile(PROMPTS_DIR+'wait-5-seconds', keyDict2)
     hangup()
 
-def skipComment(commentID):
+def invalidDigit(key, context, time):
+    # keyDict3 = newKeyDict()
+    # playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict3)
+    db.addInvalidkeyEvent(key, context, time)
+    # if (str(context)=='mainMenu'):
+        # try:
+            # playFile(PROMPTS_DIR+'welcome',keyDict)
+            # for i in range(1,4):
+                # playFile(PROMPTS_DIR+'record-1', keyDict)
+            # hangup()
+    # elif (str(context)=='playBack'):
+        # playBack()
+    # elif (str(context)=='addComment'):
+        # addComment()
+    # else:
+        # login()
+
+def skipComment(commentID, time):
     debugPrint("SKIPPING COMMENT "+str(commentID))
     db.skipComment(int(commentID))
+    db.addSkipEvent(commentID, time)
 
 def addComment():
     playFile(PROMPTS_DIR+'mistake-0')
@@ -124,11 +171,27 @@ def addComment():
     newCommentID = db.addCommentToChannel(user, '12345')
     os.rename(AST_SOUND_DIR+commentTempFileName+".wav", SOUND_DIR+str(newCommentID)+".wav")
     os.system("lame -h --abr 200 "+SOUND_DIR+str(newCommentID)+".wav "+SOUND_DIR+"/web/" \
-                                                              + str(newCommentID)+".mp3")
+                                                             + str(newCommentID)+".mp3")
+    db.addMessageRecordEvent(newCommentID) 
+    # server = smtplib.SMTP('smtp.gmail.com:587')
+    # server.ehlo()
+    # server.starttls()
+    # server.ehlo()
+    # server.login(username,password)
+    # server.sendmail(fromaddr, toaddrs, msg)
+    # server.quit()
+    trm = stopwatch.Timer()
     playFile(PROMPTS_DIR+'thank-you-submitted')
     keyDict2 = newKeyDict()
     keyDict2['1'] = (addComment,())
     keyDict2['2'] = (playBack,('skip-post-1',))
+    keyDict2['3'] = (invalidDigit,(3, 'Main Menu after Recording', trm,))
+    keyDict2['4'] = (invalidDigit,(4, 'Main Menu after Recording', trm,))
+    keyDict2['5'] = (invalidDigit,(5, 'Main Menu after Recording', trm,))
+    keyDict2['6'] = (invalidDigit,(6, 'Main Menu after Recording', trm,))
+    keyDict2['7'] = (invalidDigit,(7, 'Main Menu after Recording', trm,))
+    keyDict2['8'] = (invalidDigit,(8, 'Main Menu after Recording', trm,))
+    keyDict2['9'] = (invalidDigit,(9, 'Main Menu after Recording', trm,))
     for i in range(1,4):
         playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
         playFile(PROMPTS_DIR+'record-1', keyDict2)
@@ -198,6 +261,6 @@ if __name__=='__main__':
             mainMenu()
         except KeyPressException, e:
             if e.key != '0':
-                raise
+                db.addInvalidkeyEvent(e.key, 'mm', 5)
             else:
                 continue
