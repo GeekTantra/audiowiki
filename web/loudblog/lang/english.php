@@ -12,6 +12,7 @@ $lang = array(
 "rec2_preview" =>"Enable previewing?",
 "change_title" =>"Useful Links",
 "change_post_id" => "This post id = ",
+"change_caller_id" => "Caller id = ",
 "change_preview" => "Preview this post",
 "change_preview_title" => "Preview current post in new tab or window",
 "change_later" => "Edit later post",

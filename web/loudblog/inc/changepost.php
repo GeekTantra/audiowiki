@@ -20,9 +20,19 @@ $dosql = "SELECT  id, title, posted FROM ".$GLOBALS['prefix']." lb_postings
 
 $lastresult = $GLOBALS['lbdata'] -> GetArray($dosql);
 
+//find caller ID
+$dosql = "SELECT user FROM ".$GLOBALS['prefix']." lb_postings
+           WHERE id = ".$edit_id;
+
+$callerid = $GLOBALS['lbdata'] -> GetArray($dosql);
+
 //display links on screen
 echo "<h3>".bla("change_title")."</h3>\n";
   echo bla("change_post_id").$edit_id;
+// show caller id
+if (!empty($callerid)) {
+  echo " | ".bla("change_caller_id").$callerid[0]['user'];
+}
 //if previews enabled, link to preview post in new tab
 	if (!empty($settings['previews'])) {
 	echo "  |  <a  href=\"../index.php?preview=1&amp;id=".$edit_id."\" target=\"_blank\" title= \"".bla("change_preview_title")."\">".bla("change_preview")."</a>";
