@@ -3,13 +3,29 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 
 <head>
-    <title><lb:sitename /> - <lb:siteslogan /></title>
+    <title><lb:sitename /> </title>
+    <link rel="Shortcut Icon" href="swaraicon.png" type="image/x-icon" />
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <link rel="stylesheet" media="screen" href="screen.css" type="text/css" />
     <lb:rssfeedhead />
     <meta http-equiv="content-language" content="en" />
     <meta name="cgneet awara" content="cgnet swara" />
 	<meta name="description" content="<lb:sitedescription />" />
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17543752-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+<script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script><script type="text/javascript">stLight.options({publisher:'8c4880ac-9f17-48bb-83eb-e948d49c684b'});</script>
 </head>
 
 
@@ -26,18 +42,22 @@
 
 	<div id="headbox">
     	<div class="container">
-        	<h2>Welcome</h2>
-        	<p><lb:sitedescription /></p>
+       	  <h2>Welcome</h2>
+       	  <p><lb:sitedescription />
+       	  </p>
+       	  <p><a href="http://twitter.com/CGnet_Swara"><img src="twitter.png" alt="" width="16" height="16" /></a> <a href="http://www.facebook.com/#!/pages/CGNet-Swara/108247265894675?ref=ts"><img src="facebook.png" alt="" width="16" height="16" /></a></p>
        	  <p>
        	    <lb:link_podcast><img src="feedicon.gif" alt="Feed icon" /> Swara posts feed</lb:link_podcast> 
-        	<br />
-        	<lb:link_podcast comments="true"></lb:link_podcast></p>
+   	      </p>
+       	  <p><span class="st_sharethis" displayText="ShareThis"></span><br /><br />
+       	    <lb:link_podcast comments="true"></lb:link_podcast>
+   	      </p>
     	</div>
     
     	<div class="container">
-        	<h2>Browse by Date</h2>
+        	<h2>Browse by Month</h2>
         	<ul>
-        		<lb:calendar firstDayOfWeek="1" decoration="0" />
+        		<lb:archive /> 
             	
         		
         	</ul>
@@ -69,33 +89,45 @@
         	<div class="box">
         		<lb:message />
         	</div>
-        
-        	<div class="box">
-        		<dl>
-        			<lb:loop_hyperlinks>
-            		<dt><lb:link_hyperlink><lb:hyperlinkname /></lb:link_hyperlink></dt>
-            		<dd><lb:hyperlinkdescription /></dd>
-        			</lb:loop_hyperlinks>
-        		</dl>
-        	</div>
-        
         	<lb:if_audio>
         	<div class="audiobox">
         		<lb:flashplayer width="200" height="70" />
         		
         	</div>
-        	</lb:if_audio>
+   	    </lb:if_audio>
                 
-        	<p class="author">
+       	  <p class="author">
             	<lb:link_permalink>Posted on: </lb:link_permalink> 
             	<lb:posted /> <br>
-            	Language: <lb:loop_postingcats><lb:postingcat link="true" /> | 
+            	Language: <lb:loop_postingcats><lb:postingcat link="true" /> 
             	</lb:loop_postingcats>
-			<br>Caller: <lb:loop_postingtags><lb:postingtag link="true" /> |
-			</lb:loop_postingtags>
-        	</p>    		<lb:area_comments>
+			<br>
+            	Caller: <lb:loop_postingtags><lb:postingtag link="true" /> 
+			</lb:loop_postingtags><br>
+       	  </p>
+       	  <div class="box">
+		    <p><span class="st_sharethis" displayText="ShareThis"></span>
+            <br />
+			</p>
+		    <p>Related posts: </p>
+		    <dl>
+       	      <lb:loop_hyperlinks>
+       	        <dt>
+       	          <lb:link_hyperlink>
+       	            <lb:hyperlinkname />
+   	              </lb:link_hyperlink>
+   	            </dt>
+       	        <dd>
+       	          <lb:hyperlinkdescription />
+   	            </dd>
+   	          </lb:loop_hyperlinks>
+   	        </dl>
+   	      </div>    
+          <br /> 		
+        	<lb:area_comments>
     
- 			<h2 id="commentheadline">Comments</h2>
+ 			<h2 id="commentheadline">&nbsp;</h2>
+ 			<h2>Comments</h2>
         	<ol id="commentlist">
         		<lb:loop_comments>
             	<li>
@@ -109,7 +141,7 @@
             		</lb:if_commentaudio>
             		<lb:commentmessage />
             	</li>
-        		</lb:loop_comments>
+       		  </lb:loop_comments>
         	</ol>
         
         	<lb:area_makecomment>
@@ -149,7 +181,7 @@
                 <lb:buttonsend />
             </div>
         	</lb:area_makecomment>    
-    		</lb:area_comments>
+   		  </lb:area_comments>
 
     	</div>
     
