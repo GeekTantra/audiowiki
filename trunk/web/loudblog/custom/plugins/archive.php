@@ -24,18 +24,18 @@ function archive($context) {
 	$content = '';
 	
 	// define something
-	$displayMonth['01'] = 'january';
-	$displayMonth['02'] = 'february';
-	$displayMonth['03'] = 'march';
-	$displayMonth['04'] = 'april';
-	$displayMonth['05'] = 'may';
-	$displayMonth['06'] = 'june';
-	$displayMonth['07'] = 'july';
-	$displayMonth['08'] = 'august';
-	$displayMonth['09'] = 'september';
-	$displayMonth['10'] = 'october';
-	$displayMonth['11'] = 'november';
-	$displayMonth['12'] = 'december';
+	$displayMonth['01'] = 'January';
+	$displayMonth['02'] = 'February';
+	$displayMonth['03'] = 'March';
+	$displayMonth['04'] = 'April';
+	$displayMonth['05'] = 'May';
+	$displayMonth['06'] = 'June';
+	$displayMonth['07'] = 'July';
+	$displayMonth['08'] = 'August';
+	$displayMonth['09'] = 'September';
+	$displayMonth['10'] = 'October';
+	$displayMonth['11'] = 'November';
+	$displayMonth['12'] = 'December';
 
 	// parse attributes
 	if(isset($attributes['begin'])) {

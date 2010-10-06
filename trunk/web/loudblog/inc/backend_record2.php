@@ -14,18 +14,39 @@ include ('inc/navigation.php');
 
 if (isset($_GET['do'])) {
 
+ $source = "./test.txt";
+   $destination = "./copy.txt";
+                 
+   
+
 if ($_GET['do'] == "browser") {
     if (isset($_GET['id'])){
 		$edit_id = upload_browser($_GET['id']);
-		$target_path = 'mp3/';
-		$target_path = $target_path . $edit_id . ".mp3";
-//converting to wav
-		$convertToWav1 = "lame -b 32 $target_path $soundsDir/$edit_id.wav";
-		$convertToWav2 = "sox -V $soundsDir/$edit_id.wav -r 8000 -c 1 $soundsDir/$edit_id.raw";
-		exec($convertToWav1, $output = array());
-		exec($convertToWav2);
+		/*$oldDir = "/sounds/";
+		$newDir = "/sounds/original/";
+		$oldFile = $oldDir . $edit_id . ".wav";
+		$newFile = $newDir . $edit_id . ".wav";		
+		echo "<a href=$oldFile>oldFile</a>";
+		echo "</br>";
+		echo "<a href=$newFile>newFile</a>";
+		echo "</br>";*/
+		exec("mv sounds/$edit_id.wav sounds/original/$edit_id.wav");
+		exec("/usr/local/bin/lame audio/$edit_id.mp3 --decode sounds/$edit_id.wav", $output = array(),$result);		
+		exec("sox -V sounds/$edit_id.wav -r 8000 -c 1 sounds/$edit_id.raw");
+		
 	
+	/*if ($result !== 0) {
+		echo 'Command failed!<br>';
+		print_r($command_output);
+		die();
 	}
+
+	echo 'success!';
+	print_r($output);  */ 
+			
+									
+		
+		}
     else $edit_id = upload_browser(false);
 }
 
