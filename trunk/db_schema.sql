@@ -1,7 +1,3 @@
-Usage: mysqldump [OPTIONS] database [tables]
-OR     mysqldump [OPTIONS] --databases [OPTIONS] DB1 [DB2 DB3...]
-OR     mysqldump [OPTIONS] --all-databases [OPTIONS]
-For more options, use mysqldump --help
 -- MySQL dump 10.13  Distrib 5.1.49, for pc-linux-gnu (i686)
 --
 -- Host: localhost    Database: 
