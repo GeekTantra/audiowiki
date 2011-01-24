@@ -182,3 +182,84 @@ cp OLD_AUDIOWIKI/sound\ files/sounds/sounds/audiowikiIndia/web/*.mp3 audiowiki/s
 
 * Install LAME
 Download source from Sourceforge; compile and install
+
+-----
+
+[ADDITIONAL DEPENDENCIES]
+* Python Setuptools
+  yum install setuptools
+
+* Python Stopwatch module
+  easy_install stopwatch
+
+* Python MySQL DB connectors
+  easy_install MySQL-python
+
+-----
+[SETTING UP SIP EMULATION USING SJPHONE]
+* Download and extract SJPhone:
+  wget -c http://www.sjphone.org/softphone/SJphoneLnx-299a.tar.gz
+  tar xvf SJphoneLnx-299a.tar.gz
+  mv SJphoneLnx-299a /home/<your-user-name>/SJPhone
+
+* Create a SJPhone launcher (Run as root)
+  touch /usr/bin/run-sjphone
+  echo -e '#!/bin/bash\ncd /home/<your-user-name>/SJPhone\n./sjphone' > /usr/bin/run-sjphone
+
+* Load OSS ALSA Emulation Modules:
+  modprobe snd-pcm-oss
+
+* Create symlinks for asterisk sounds
+  ln -s /home/<your-user-name>/audiowiki/sound\ files/sounds/sounds/audiowikiIndia /var/lib/asterisk/sounds/audiowikiIndia
+
+* Edit Asterisk sip.conf (/etc/asterisk/sip.conf)
+  Uncomment the following lines:
+    disallow=all                   ; First disallow all codecs
+    allow=ulaw                     ; Allow codecs in order of preference
+  Add the following section:
+    [mysjphone]
+    context=from-sip
+    type=friend
+    host=dynamic
+    username=mysjphone
+    secret=<set-your-password>
+
+* Edit Asterisk extensions.conf (/etc/asterisk/sip.conf)
+  Add the following section:
+    [from-sip]
+    exten => mysjphone2,1,Answer
+    exten => mysjphone2,n,Set(TIMEOUT(absolute)=480)
+    exten => mysjphone2,n,Wait(1)
+    exten => mysjphone2,n,Verbose(Before AGI call)
+    exten => mysjphone2,n,AGI(menu_system.py)
+    exten => mysjphone2,n,Verbose(After AGI call)
+    exten => mysjphone2,n,Hangup
+
+* SJPhone configuration:
+
+    1) click on the Options button
+    2) go to the Profiles tab.
+    3) click on 'New'
+    4) create a new profile called 'asterisk' with profile type 'Calls through SIP proxy'
+    5) use this profile for your asterisk connection with the following settings:
+
+    Register with proxy - checked.
+    Proxy domain: 192.168.0.1 (IP on which asterisk is listening)
+
+    Leave the rest of the settings at default. When you hit the OK button, it will ask for
+
+      Account: mysjphone
+      Password: <as above>
+
+    You can change the account and password by reinitializing the profile.
+
+    When it's working, SJPhone's main display shows:
+
+     Status: no active calls
+     Default protocol: SIP
+     SIP Proxy: registered with 192.168.0.1
+     Host address: 192.168.0.2
+
+    and Asterisk's console displays:
+     Registered SIP 'mysjphone' at 192.168.0.2 
+
