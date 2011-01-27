@@ -1,0 +1,4 @@
+cdr --> /usr/src/asterisk-addons-x.x.x.x
+cdr.conf, cdr_mysql.conf ---> /etc/asterisk
+
+---incomplete---
