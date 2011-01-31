@@ -85,6 +85,7 @@ def mainMenu():
     keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
     keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
     keyDict['9'] = (invalidDigit,(9, 'Main Menu', tmm,))
+    keyDict['*'] = (playFeatured,())
     try:
         playFile(PROMPTS_DIR+'welcome', keyDict)
         for i in range(1,4):
@@ -116,6 +117,7 @@ def playBack(intro=None):
         keyDict['7'] = (invalidDigit,(7, 'Playback', tpb,))
         keyDict['8'] = (invalidDigit,(8, 'Playback', tpb,))
         keyDict['9'] = (invalidDigit,(9, 'Playback', tpb,))
+        keyDict['*'] = (playFeatured,())
         commentFile = SOUND_DIR+str(postID)
         keyPress = playFile(commentFile, keyDict)
         if keyPress == '1': # If user presses 1, skip to next comment.
@@ -133,6 +135,7 @@ def playBack(intro=None):
     keyDict2['7'] = (invalidDigit,(7, 'Main Menu after Playback', tpbm,))
     keyDict2['8'] = (invalidDigit,(8, 'Main Menu after Playback', tpbm,))
     keyDict2['9'] = (invalidDigit,(9, 'Main Menu after Playback', tpbm,))
+    keyDict2['*'] = (playFeatured,())
     playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
     for i in range(1,4):
         playFile(PROMPTS_DIR+'record-1', keyDict2)
@@ -192,12 +195,61 @@ def addComment():
     keyDict2['7'] = (invalidDigit,(7, 'Main Menu after Recording', trm,))
     keyDict2['8'] = (invalidDigit,(8, 'Main Menu after Recording', trm,))
     keyDict2['9'] = (invalidDigit,(9, 'Main Menu after Recording', trm,))
+    keyDict2['*'] = (playFeatured,())
     for i in range(1,4):
         playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
         playFile(PROMPTS_DIR+'record-1', keyDict2)
         playFile(PROMPTS_DIR+'listen-2', keyDict2)
         playFile(PROMPTS_DIR+'wait-5-seconds', keyDict2)
     hangup()
+
+def playFeatured():
+    keyDict = newKeyDict()
+    posts = db.getFeaturedPosts()
+    debugPrint( "Playing Featured Messages!" );
+    if len(posts) == 0:
+        return playFile(PROMPTS_DIR+'no-comments', keyDict)
+    playFile(PROMPTS_DIR+'mistake-0', keyDict)
+    count = 0
+    for postID in posts:
+        tpb = stopwatch.Timer()
+        count = count + 1
+        if (count==5):
+            break
+        keyDict['1'] = (skipComment,(postID, tpb))
+        keyDict['3'] = (invalidDigit,(3, 'Playback', tpb,))
+        keyDict['4'] = (invalidDigit,(4, 'Playback', tpb,))
+        keyDict['5'] = (invalidDigit,(5, 'Playback', tpb,))
+        keyDict['6'] = (invalidDigit,(6, 'Playback', tpb,))
+        keyDict['7'] = (invalidDigit,(7, 'Playback', tpb,))
+        keyDict['8'] = (invalidDigit,(8, 'Playback', tpb,))
+        keyDict['9'] = (invalidDigit,(9, 'Playback', tpb,))
+        keyDict['*'] = (playFeatured,())
+        commentFile = SOUND_DIR+str(postID)
+        keyPress = playFile(commentFile, keyDict)
+        if keyPress == '1': # If user presses 1, skip to next comment.
+            pass
+        db.addPlaybackEvent(postID, tpb)
+    tpbm = stopwatch.Timer()
+    playFile(PROMPTS_DIR+'for-older-posts')
+    keyDict2 = newKeyDict()
+    keyDict2['1'] = (addComment,())
+    keyDict2['2'] = (playBack,('skip-post-1',))
+    keyDict2['3'] = (invalidDigit,(3, 'Main Menu after Playback', tpbm,))
+    keyDict2['4'] = (invalidDigit,(4, 'Main Menu after Playback', tpbm,))
+    keyDict2['5'] = (invalidDigit,(5, 'Main Menu after Playback', tpbm,))
+    keyDict2['6'] = (invalidDigit,(6, 'Main Menu after Playback', tpbm,))
+    keyDict2['7'] = (invalidDigit,(7, 'Main Menu after Playback', tpbm,))
+    keyDict2['8'] = (invalidDigit,(8, 'Main Menu after Playback', tpbm,))
+    keyDict2['9'] = (invalidDigit,(9, 'Main Menu after Playback', tpbm,))
+    keyDict2['*'] = (playFeatured,())
+    playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
+    for i in range(1,4):
+        playFile(PROMPTS_DIR+'record-1', keyDict2)
+        playFile(PROMPTS_DIR+'listen-2', keyDict2)
+        playFile(PROMPTS_DIR+'wait-5-seconds', keyDict2)
+    hangup()
+
 
 def recordFileNoPlayback(introFilename, recordLen=30000):
     keyDict = newKeyDict()

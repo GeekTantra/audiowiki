@@ -26,20 +26,20 @@ class Database:
         
     def getPostsInChannel(self, channelNum):
         self.c.execute("SELECT * FROM lb_postings WHERE station = %s and status = 3 ORDER BY posted DESC;",
-						(str(channelNum),))
+                        (str(channelNum),))
         posts = self.c.fetchall()
         posts = [i[0] for i in posts]
         return posts
 
     def publishPost(self, postID):
         self.c.execute("UPDATE lb_postings SET status = 3 WHERE id = %s;",
-						(str(postID),))
+                        (str(postID),))
         self.db.commit()
 
     def archivePost(self, postID):
         self.c.execute("UPDATE lb_postings SET status = 2 WHERE id = %s;",
-						(str(postID),))
-	self.db.commit()
+                        (str(postID),))
+        self.db.commit()
 
     def newCall(self, user):
         self.c.execute("INSERT INTO callLog (user) values (%s);",(str(user),))
@@ -73,16 +73,16 @@ class Database:
 
    
     def addCommentToChannel(self, phoneNum, channel):
-		self.c.execute("INSERT INTO lb_postings (user, station) VALUES (%s, %s);",(phoneNum, str(channel),))
-		self.db.commit()
-		ids = str(self.c.lastrowid)
-		extension = '.mp3'	
-		filename = ids + extension
-		print filename
-		self.c.execute("UPDATE lb_postings SET audio_file = %s WHERE id = %s;",(filename, ids)) 
-		self.db.commit()
-		return ids
-		
+        self.c.execute("INSERT INTO lb_postings (user, station) VALUES (%s, %s);",(phoneNum, str(channel),))
+        self.db.commit()
+        ids = str(self.c.lastrowid)
+        extension = '.mp3'
+        filename = ids + extension
+        print filename
+        self.c.execute("UPDATE lb_postings SET audio_file = %s WHERE id = %s;",(filename, ids)) 
+        self.db.commit()
+        return ids
+
     def addComment(self, phoneNum):
         self.c.execute("INSERT INTO lb_postings (user) VALUES (%s);", \
                        (phoneNum))
@@ -95,25 +95,30 @@ class Database:
             (commentID))
         self.db.commit()
         debugPrint("SKIPPED "+str(commentID))
-		
+
     def addPlaybackEvent(self, postID, duration):
         self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Listened', str(postID), str(duration),))
-	self.db.commit()
-	return self.c.lastrowid
-		
+        self.db.commit()
+        return self.c.lastrowid
+
     def addSkipEvent(self, postID, duration):
         self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Skipped', str(postID), str(duration),))
-	self.db.commit()
-		
+        self.db.commit()
+
     def addInvalidkeyEvent(self, key, when, duration):
         self.c.execute("INSERT INTO analytics (eventype, invdgtpsd, context, whenpressed) VALUES (%s, %s, %s, %s);",('Invalid Keypress', str(key), str(when), str(duration),))
         self.db.commit()
-	
+
     def addMessageRecordEvent(self, postID):
         self.c.execute("INSERT INTO analytics (eventype, msgrcd) VALUES (%s, %s);",('Recorded', str(postID),))
-	self.db.commit()
-	
+        self.db.commit()
     
     def getID(self):
         self.c.execute("""SELECT id FROM cdr ORDER BY calldate DESC LIMIT 1;""")
         callidno = self.c.fetchall()
+    
+    def getFeaturedPosts(self):
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY RAND()""")
+        posts = self.c.fetchall();
+        posts = [i[0] for i in posts]
+        return posts
