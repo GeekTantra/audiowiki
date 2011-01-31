@@ -118,7 +118,7 @@ class Database:
         callidno = self.c.fetchall()
     
     def getFeaturedPosts(self):
-        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY RAND()""")
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY posted DESC LIMIT 0,1""")
         posts = self.c.fetchall();
         posts = [i[0] for i in posts]
         return posts
