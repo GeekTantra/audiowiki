@@ -117,6 +117,26 @@ class Database:
         self.c.execute("""SELECT id FROM cdr ORDER BY calldate DESC LIMIT 1;""")
         callidno = self.c.fetchall()
 
+    def getFeaturedPosts(self):
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY posted DESC LIMIT 0,1""")
+        posts = self.c.fetchall();
+        posts = [i[0] for i in posts]
+        return posts
+
+    # Dev's Modification: getLanguageForSeries method
+    def getLanguageForSeries(self, series):
+        self.c.execute( """
+        SELECT circledata.language AS language 
+          FROM circledata,mobileseries 
+         WHERE mobileseries.circle = circledata.circle
+           AND series LIKE %s""", (series) )
+        language = self.c.fetchall()
+        language = [i[0] for i in language]
+        if language !=[] and language[0].strip('\n').strip('\r')!='':
+            return language[0].strip('\n').strip('\r')
+        else:
+            return None
+
     # Arjun's changes for localization
     def addCellNumSeries(self, series,provider,circle):
         self.c.execute("INSERT INTO mobileseries (series,provider,circle)  VALUES (%s, %s, %s);", (series, provider, circle,))
@@ -131,12 +151,6 @@ class Database:
             return circle[0].strip('\n').strip('\r')
         else:
             return None
-
-    def getFeaturedPosts(self):
-        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY posted DESC LIMIT 0,1""")
-        posts = self.c.fetchall();
-        posts = [i[0] for i in posts]
-        return posts
 
     def addCircleData(self,circle,circlename,language):
         self.c.execute("INSERT INTO circledata (circle, circlename, language) VALUES (%s, %s, %s);",(circle, circlename, language,))
@@ -205,4 +219,5 @@ class Database:
                 posts.remove(post)
                 break;
         return userposts
+    
     
