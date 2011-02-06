@@ -37,7 +37,7 @@ else:
 
 language = 'kannada' # Default language is kannada
 SOUND_DIR = '/var/lib/asterisk/sounds/audiowikiIndia/'
-PROMPTS_DIR = SOUND_DIR + 'prompts/hindi/'
+#PROMPTS_DIR = SOUND_DIR + 'prompts/hindi/'
 AST_SOUND_DIR = '/var/lib/asterisk/sounds/'
 
 sys.setrecursionlimit(15000)
@@ -68,13 +68,18 @@ def login():
 def mainMenu():
     """
     """
-    global language
+    #logger("%s" %language)
+    #global language
     callid = db.getID()
     # callid = int(callid) + 1 
     tmm = stopwatch.Timer()
     debugPrint("STARTING MAIN MENU")
-    language = 'hindi'
-    debugPrint("LANGUAGE IS "+language)
+    #language = 'hindi'
+    #debugPrint("LANGUAGE IS "+language)
+    global PROMPTS_DIR
+    #Dev's Mod: Makes Hindi the default language
+    PROMPTS_DIR = SOUND_DIR + 'prompts/' + (language, 'hindi')[language == None] + '/' 
+    #logger("%s" %PROMPTS_DIR)
     keyDict = newKeyDict()
     keyDict['1'] = (addComment,())
     keyDict['2'] = (playBack,('skip-post-1',))
@@ -93,7 +98,7 @@ def mainMenu():
             playFile(PROMPTS_DIR+'listen-2', keyDict)
             playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) 
         hangup()
-    except KeyPressException, e:       
+    except KeyPressException, e:
         raise
 
 def playBack(intro=None):
@@ -308,6 +313,12 @@ if __name__=='__main__':
         db = Database()
         user = env['agi_callerid']
     login()
+    #logger("%s logged in" %user)
+    circle=db.getCircleForSeries(user[:4])
+    #logger("User %s" %user[:4])
+    #logger("%s" %circle)
+    language=db.getLanguageForCircle(circle)
+    #logger("%s" %language)
     while True:
         try:
             mainMenu()
