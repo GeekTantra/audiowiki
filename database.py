@@ -117,6 +117,7 @@ class Database:
         self.c.execute("""SELECT id FROM cdr ORDER BY calldate DESC LIMIT 1;""")
         callidno = self.c.fetchall()
 
+    # Arjun's changes for localization
     def addCellNumSeries(self, series,provider,circle):
         self.c.execute("INSERT INTO mobileseries (series,provider,circle)  VALUES (%s, %s, %s);", (series, provider, circle,))
         self.db.commit()
@@ -137,7 +138,6 @@ class Database:
         posts = [i[0] for i in posts]
         return posts
 
-    # Arjun's changes for localization
     def addCircleData(self,circle,circlename,language):
         self.c.execute("INSERT INTO circledata (circle, circlename, language) VALUES (%s, %s, %s);",(circle, circlename, language,))
         self.db.commit()
