@@ -314,10 +314,11 @@ if __name__=='__main__':
         user = env['agi_callerid']
     login()
     #logger("%s logged in" %user)
-    circle=db.getCircleForSeries(user[:4])
+    #circle=db.getCircleForSeries(user[:4])
     #logger("User %s" %user[:4])
     #logger("%s" %circle)
-    language=db.getLanguageForCircle(circle)
+    #language=db.getLanguageForCircle(circle)
+    language=db.getLanguageForSeries(user[:4])
     #logger("%s" %language)
     while True:
         try:
