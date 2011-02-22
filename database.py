@@ -4,12 +4,15 @@
 import MySQLdb
 import re
 from utilities import *
+import ConfigParser
 
-DB_USER = 'spark'
-DB_PASSWD = 'Ath3n@1094'
-DB_HOST = '127.0.0.1'
-DB_PORT = 3306
-DB_NAME = 'audiwikiswara'
+config=ConfigParser.ConfigParser()
+config.read("/etc/swara.conf")
+DB_USER = config.get("Database","username")
+DB_PASSWD = config.get("Database","password")
+DB_HOST = config.get("Database","host")
+DB_PORT = int(config.get("Database","port"))
+DB_NAME = config.get("Database","dbname")
 
 class Database:
     def __init__(self,db_port=DB_PORT,db_host=DB_HOST,
