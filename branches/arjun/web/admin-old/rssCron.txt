@@ -1,0 +1,2 @@
+0 * * * * wget http://audiowiki.no-ip.org/admin/rss.php
+
