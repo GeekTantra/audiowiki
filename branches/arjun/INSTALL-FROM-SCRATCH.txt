@@ -262,4 +262,18 @@ Download source from Sourceforge; compile and install
 
     and Asterisk's console displays:
      Registered SIP 'mysjphone' at 192.168.0.2 
+[STATISTICS DISPLAY]
+
+Requires the generatereports.py script to be set up as a daily cron
+Edit generatereports.py to dump CSV files to your desired location
+Edit audiowiki/web/graphs/sample.line.php to point to the correct path for CSV files
+Soft link sample.line.php to index.php in the graphs directory
+Run "yum install php-xml"
+Restart Web server
+
+[TROUBLESHOOTING]
+
+Arjun: Required reinstallation of loudblog and reconfiguration of loudblog to point to my database.
+
+
 
