@@ -85,10 +85,9 @@ def mainMenu():
     keyDict = newKeyDict()
     keyDict['1'] = (addComment,())
     keyDict['2'] = (playBack,('skip-post-1',))
-    keyDict['3'] = (playBack,(None, 'playNews',))
-    keyDict['4'] = (playBack,(None, 'playNews', region,))
-    keyDict['5'] = (playBack,(None, 'playEntertainmentNews', region,))
-#    keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
+    keyDict['3'] = (newsMenu,())
+    keyDict['4'] = (invalidDigit,(5, 'Main Menu', tmm,))
+    keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
     keyDict['6'] = (invalidDigit,(6, 'Main Menu', tmm,))
     keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
     keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
@@ -103,6 +102,33 @@ def mainMenu():
         hangup()
     except KeyPressException, e:
         raise
+
+def newsMenu():
+    callid = db.getID()
+    tmm = stopwatch.Timer()
+    debugPrint("---> STARTING NEWS MENU for Region: "+str(region))
+    debugPrint(keyPressCLIPrompt("national news", "1"))
+    debugPrint(keyPressCLIPrompt("regional news", "2"))
+    debugPrint(keyPressCLIPrompt("cultural/entertainment news", "3"))
+    global PROMPTS_DIR
+    PROMPTS_DIR = SOUND_DIR + 'prompts/' + (language, 'hindi')[language == None] + '/' 
+    keyDict = newKeyDict()
+    keyDict['1'] = (playBack,(None, 'playNews',))
+    keyDict['2'] = (playBack,(None, 'playNews', region,))
+    keyDict['3'] = (playBack,(None, 'playEntertainmentNews', region,))
+    keyDict['4'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['5'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['6'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
+    keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
+    keyDict['9'] = (invalidDigit,(9, 'Main Menu', tmm,))
+    keyDict['*'] = (playBack,(None, 'playFeatured',))
+    playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict)
+    for i in range(1,4):
+        playFile(PROMPTS_DIR+'record-1', keyDict) # To be replaced by appropriate Audio Files
+        playFile(PROMPTS_DIR+'listen-2', keyDict) # To be replaced by appropriate Audio Files
+        playFile(PROMPTS_DIR+'wait-5-seconds', keyDict)
+    hangup()
 
 def playBack(intro=None, mode='playBack', playback_region='national'):
     """
