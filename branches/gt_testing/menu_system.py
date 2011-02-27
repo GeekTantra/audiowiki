@@ -132,7 +132,7 @@ def newsMenu():
 
 def playBack(intro=None, mode='playBack', playback_region='national'):
     """
-    SINGLE PLAYBACK ROUTINE FOR 'playBack', 'news', 'featured'
+    SINGLE PLAYBACK ROUTINE FOR 'playBack', 'playNews', 'playFeatured', 'playEntertainmentNews'
     """
     keyDict = newKeyDict()
     if mode == 'playBack':
