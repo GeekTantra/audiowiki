@@ -123,6 +123,12 @@ class Database:
         posts = [i[0] for i in posts]
         return posts
 
+    def getRegionalPosts(self, region):
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE %s) ORDER BY posted DESC LIMIT 0,1""", ("%"+region.lower()+"-news%"))
+        posts = self.c.fetchall();
+        posts = [i[0] for i in posts]
+        return posts
+
     # Dev's Modification: getLanguageForSeries method
     def getLanguageForSeries(self, series):
         self.c.execute( """
@@ -134,6 +140,19 @@ class Database:
         language = [i[0] for i in language]
         if language !=[] and language[0].strip('\n').strip('\r')!='':
             return language[0].strip('\n').strip('\r')
+        else:
+            return None
+
+    def getRegionForSeries( self, series ):
+        self.c.execute("""
+        SELECT circledata.circle AS circle
+          FROM circledata, mobileseries
+         WHERE mobileseries.circle = circledata.circle
+           AND series LIKE %s""", (series))
+        region = self.c.fetchall()
+        region = [i[0] for i in region]
+        if region != [] and region[0].strip('\n').strip('\r') != '':
+            return region[0].strip('\n').strip('\r')
         else:
             return None
 
