@@ -87,7 +87,8 @@ def mainMenu():
     keyDict['2'] = (playBack,('skip-post-1',))
     keyDict['3'] = (playBack,(None, 'playNews',))
     keyDict['4'] = (playBack,(None, 'playNews', region,))
-    keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
+    keyDict['5'] = (playBack,(None, 'playEntertainmentNews', region,))
+#    keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
     keyDict['6'] = (invalidDigit,(6, 'Main Menu', tmm,))
     keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
     keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
@@ -110,13 +111,16 @@ def playBack(intro=None, mode='playBack', playback_region='national'):
     keyDict = newKeyDict()
     if mode == 'playBack':
         posts = db.getPostsInChannel('12345')
-        debugPrint( "Playing messages!" );
+        debugPrint( "Playing Messages!" );
     elif mode == 'playNews':
         posts = db.getRegionalPosts(playback_region)
         debugPrint( "Playing News from '"+playback_region+"' region!" );
     elif mode == 'playFeatured':
         posts = db.getFeaturedPosts()
         debugPrint( "Playing Featured Messages!" );
+    elif mode == 'playEntertainmentNews':
+        posts = db.getEntertainmentPosts()
+        debugPrint( "Playing Cultural/Entertainment Messages!" );
 
     if len(posts) == 0:
         return playFile(PROMPTS_DIR+'no-comments', keyDict)
