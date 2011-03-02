@@ -157,8 +157,6 @@ def playBackNews( intro=None ):
     
     debugPrint('Playing entertainment news.')
     playBack(intro, 'playEntertainmentNews', region)
-    newsMenu()
-    hangup() # Hangup after entertainment news
     
 
 def playBack(intro=None, mode='playBack', playback_region='national'):
