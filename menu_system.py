@@ -84,7 +84,7 @@ def mainMenu():
     #logger("%s" %PROMPTS_DIR)
     keyDict = newKeyDict()
     keyDict['1'] = (addComment,())
-    keyDict['2'] = (playBack,('skip-post-1',))
+    keyDict['2'] = (playBackNews,('skip-post-1',))
     keyDict['3'] = (newsMenu,())
     keyDict['4'] = (invalidDigit,(5, 'Main Menu', tmm,))
     keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
@@ -130,6 +130,37 @@ def newsMenu():
         playFile(PROMPTS_DIR+'wait-5-seconds', keyDict)
     hangup()
 
+def playBackNews( intro=None ):
+    callid = db.getID()
+    tmm = stopwatch.Timer()
+    global PROMPTS_DIR
+    PROMPTS_DIR = SOUND_DIR + 'prompts/' + (language, 'hindi')[language == None] + '/' 
+    keyDict = newKeyDict()
+    keyDict['1'] = (addComment,())
+    keyDict['2'] = (playBackNews,('skip-post-1',))
+    keyDict['3'] = (newsMenu,())
+    keyDict['4'] = (invalidDigit,(5, 'Main Menu', tmm,))
+    keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
+    keyDict['6'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
+    keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
+    keyDict['9'] = (invalidDigit,(9, 'Main Menu', tmm,))
+    keyDict['*'] = (playBack,(None, 'playFeatured',))
+    
+    debugPrint('Playing national news.')
+    playBack(intro, 'playNews', 'national')
+    playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) # Pause after national news. Can be replaced by appropriate audio prompt.
+    
+    debugPrint('Playing news from region.' + region)
+    playBack(intro, 'playNews', region)
+    playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) # Pause after regional news. Can be replaced by appropriate audio prompt.
+    
+    debugPrint('Playing entertainment news.')
+    playBack(intro, 'playEntertainmentNews', region)
+    newsMenu()
+    hangup() # Hangup after entertainment news
+    
+
 def playBack(intro=None, mode='playBack', playback_region='national'):
     """
     SINGLE PLAYBACK ROUTINE FOR 'playBack', 'playNews', 'playFeatured', 'playEntertainmentNews'
@@ -173,6 +204,8 @@ def playBack(intro=None, mode='playBack', playback_region='national'):
         if keyPress == '1': # If user presses 1, skip to next comment.
             pass
         db.addPlaybackEvent(postID, tpb)
+    if mode in ['playNews', 'playFeatured']:
+        return True
     tpbm = stopwatch.Timer()
     playFile(PROMPTS_DIR+'for-older-posts')
     keyDict2 = newKeyDict()
