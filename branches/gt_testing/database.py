@@ -118,19 +118,19 @@ class Database:
         callidno = self.c.fetchall()
 
     def getFeaturedPosts(self):
-        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY posted DESC LIMIT 0,1""")
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY posted DESC""")
         posts = self.c.fetchall();
         posts = [i[0] for i in posts]
         return posts
 
     def getEntertainmentPosts(self):
-        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%entertainment%') ORDER BY posted DESC LIMIT 0,1""")
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%entertainment%') ORDER BY posted DESC""")
         posts = self.c.fetchall();
         posts = [i[0] for i in posts]
         return posts
 
     def getRegionalPosts(self, region):
-        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE %s) ORDER BY posted DESC LIMIT 0,1""", ("%"+region.lower()+"-news%"))
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE %s) ORDER BY posted DESC""", ("%"+region.lower()+"-news%"))
         posts = self.c.fetchall();
         posts = [i[0] for i in posts]
         return posts
