@@ -43,6 +43,7 @@ def playFile (fname, keyDict = newKeyDict()):
     done = 0
     while done == 0:
         mytime = time.time()
+        #debugPrint("STREAM FILE %s %s\n" % (str(fname),escapeDigits))
         debugPrint("STREAM FILE %s \"%s\"\n" % (str(fname),escapeDigits))
         sys.stdout.write("STREAM FILE %s \"%s\"\n" % (str(fname),escapeDigits))
         sys.stdout.flush()
@@ -80,7 +81,7 @@ def recordFile (fname, stopDigits, timeout, silenceTimeout):
                                                           stopDigits, \
                                                           ms_timeout, \
                                                           seconds_silenceTimeout)
-    debugPrint(cmdString)
+    #debugPrint(cmdString)
     sys.stdout.write(cmdString)
     sys.stdout.flush()
     result = readline()

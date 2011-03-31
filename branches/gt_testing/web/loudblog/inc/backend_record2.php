@@ -8,6 +8,7 @@ include ('inc/navigation.php');
 
 
 
+exec("echo 'Marker1' >> /var/log/swara.log");
  error_reporting(E_ALL);
 //where did we get the audio file from? go to appropriate function!
 //and don't come back without the id of the posting we will edit later!
@@ -18,6 +19,7 @@ if (isset($_GET['do'])) {
    $destination = "./copy.txt";
                  
    
+exec("echo 'Marker2' >> /var/log/swara.log");
 
 if ($_GET['do'] == "browser") {
     if (isset($_GET['id'])){
@@ -30,8 +32,10 @@ if ($_GET['do'] == "browser") {
 		echo "</br>";
 		echo "<a href=$newFile>newFile</a>";
 		echo "</br>";*/
-		exec("mv sounds/$edit_id.wav sounds/original/$edit_id.wav");
-		exec("/usr/local/bin/lame audio/$edit_id.mp3 --decode sounds/$edit_id.wav", $output = array(),$result);		
+		exec("mv /home/swara/audiowiki/web/sounds/$edit_id.wav /home/swara/audiowiki/web/sounds/original/$edit_id.wav");
+		exec("/usr/local/bin/lame /home/swara/audiowiki/web/audio/$edit_id.mp3 --decode /home/swara/audiowiki/web/sounds/$edit_id.wav", $output = array(),$result);		
+		#exec("echo 'Marker3' >> /var/log/swara.log");
+		print("Marker3");
 		exec("sox -V sounds/$edit_id.wav -r 8000 -c 1 sounds/$edit_id.raw");
 		
 	

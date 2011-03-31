@@ -4,12 +4,15 @@
 import MySQLdb
 import re
 from utilities import *
+import ConfigParser
 
-DB_USER = 'spark'
-DB_PASSWD = 'Ath3n@1094'
-DB_HOST = '127.0.0.1'
-DB_PORT = 3306
-DB_NAME = 'audiwikiswara'
+config=ConfigParser.ConfigParser()
+config.read("/etc/swara.conf")
+DB_USER = config.get("Database","username")
+DB_PASSWD = config.get("Database","password")
+DB_HOST = config.get("Database","host")
+DB_PORT = int(config.get("Database","port"))
+DB_NAME = config.get("Database","dbname")
 
 class Database:
     def __init__(self,db_port=DB_PORT,db_host=DB_HOST,
@@ -44,6 +47,10 @@ class Database:
     def newCall(self, user):
         self.c.execute("INSERT INTO callLog (user) values (%s);",(str(user),))
         self.db.commit()
+        self.c.execute("SELECT LAST_INSERT_ID() FROM callLog;")
+        callID=self.c.fetchall()
+        callID=[i[0] for i in callID]
+        return callID[0]
 
     def addUser(self, phoneNumberString):
         self.c.execute("INSERT INTO users (phone_number) " + \
@@ -96,22 +103,29 @@ class Database:
         self.db.commit()
         debugPrint("SKIPPED "+str(commentID))
 
-    def addPlaybackEvent(self, postID, duration):
-        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Listened', str(postID), str(duration),))
+    def addPlaybackEvent(self, postID, duration, callid):
+        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto, callid) VALUES (%s, %s, %s, %s);",('Listened', str(postID), str(duration),str(callid),))
         self.db.commit()
         return self.c.lastrowid
+    #def addPlaybackEvent(self, postID, duration):
+        #self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Listened', str(postID), str(duration),))
+        #self.db.commit()
+        #return self.c.lastrowid
 
-    def addSkipEvent(self, postID, duration):
-        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Skipped', str(postID), str(duration),))
+    def addSkipEvent(self, postID, duration,callid):
+        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto, callid) VALUES (%s, %s, %s, %s);",('Skipped', str(postID), str(duration), str(callid),))
         self.db.commit()
 
-    def addInvalidkeyEvent(self, key, when, duration):
-        self.c.execute("INSERT INTO analytics (eventype, invdgtpsd, context, whenpressed) VALUES (%s, %s, %s, %s);",('Invalid Keypress', str(key), str(when), str(duration),))
+    def addInvalidkeyEvent(self, key, when, duration, callid):
+        self.c.execute("INSERT INTO analytics (eventype, invdgtpsd, context, whenpressed,callid) VALUES (%s, %s, %s, %s);",('Invalid Keypress', str(key), str(when), str(duration),str(callid),))
         self.db.commit()
 
-    def addMessageRecordEvent(self, postID):
-        self.c.execute("INSERT INTO analytics (eventype, msgrcd) VALUES (%s, %s);",('Recorded', str(postID),))
+    def addMessageRecordEvent(self, postID,callid):
+        self.c.execute("INSERT INTO analytics (eventype, msgrcd, callid) VALUES (%s, %s,%s);",('Recorded', str(postID),str(callid),))
         self.db.commit()
+    #def addMessageRecordEvent(self, postID):
+        #self.c.execute("INSERT INTO analytics (eventype, msgrcd) VALUES (%s, %s);",('Recorded', str(postID),))
+        #self.db.commit()
 
     def getID(self):
         self.c.execute("""SELECT id FROM cdr ORDER BY calldate DESC LIMIT 1;""")
@@ -130,9 +144,12 @@ class Database:
         return posts
 
     def getRegionalPosts(self, region):
-        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE %s) ORDER BY posted DESC""", ("%"+region.lower()+"-news%"))
+        debugPrint("Getting regional posts for %s1" %region)
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND tags LIKE %s ORDER BY posted DESC""", ("%"+region.strip().lower()+"-news%"))
         posts = self.c.fetchall();
         posts = [i[0] for i in posts]
+        if posts:
+            debugPrint("Found a post! Found a Post!")
         return posts
 
     # Dev's Modification: getLanguageForSeries method
