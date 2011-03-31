@@ -4,6 +4,7 @@ echo "<h1>".bla("hl_rec1")."</h1>";
 
 include ('inc/navigation.php'); 
 
+exec("echo 'Marker4' >> /var/log/swara.log");
 //check url whether we want to update the file of an existing posting
 if ((isset($_GET['do'])) AND ($_GET['do'] == "update")) {
     $update = true;
@@ -71,9 +72,10 @@ if ((isset($settings['cgi'])) AND ($settings['cgi'] == 1)) {
     if ($update) { echo "&amp;id=" . $update_id; }   
 	
 	
-		$convertToWav1 = "usr/local/bin/lame -b 32 $mp3_target $soundsDir/$update_id.wav";
+		$convertToWav1 = "/usr/local/bin/lame -b 32 $mp3_target $soundsDir/$update_id.wav";
 		$convertToWav2 = "sox -V $soundsDir/$update_id.wav -r 8000 -c 1 $soundsDir/$update_id.raw";
 		exec($convertToWav1, $output = array());
+		exec("echo hello >> /var/log/swara.log");
 		exec($convertToWav2);
 
     echo "\" enctype=\"multipart/form-data\" onSubmit=\"return saythis('".bla("alert_patience")."')\">\n";

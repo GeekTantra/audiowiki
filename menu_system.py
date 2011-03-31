@@ -53,7 +53,9 @@ def login():
 
     Audio Files:
     """
-    db.newCall(user)
+    global callID
+    callID=db.newCall(user)
+    debugPrint("Call ID = " + str(callID))
     debugPrint("detected caller id="+user)
     if not db.isUser(user): # If the phone number calling the system is
                             # unrecognized by the database, add the number
@@ -151,7 +153,7 @@ def playBackNews( intro=None ):
     playBack(intro, 'playNews', 'national')
     playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) # Pause after national news. Can be replaced by appropriate audio prompt.
     
-    debugPrint('Playing news from region.' + region)
+    debugPrint('Playing news from region ' + region)
     playBack(intro, 'playNews', region)
     playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) # Pause after regional news. Can be replaced by appropriate audio prompt.
     
@@ -168,6 +170,7 @@ def playBack(intro=None, mode='playBack', playback_region='national'):
         posts = db.getPostsInChannel('12345')
         debugPrint( "Playing Messages!" );
     elif mode == 'playNews':
+        debugPrint("Getting posts for region %s" %playback_region)
         posts = db.getRegionalPosts(playback_region)
         debugPrint( "Playing News from '"+playback_region+"' region!" );
     elif mode == 'playFeatured':
@@ -201,7 +204,8 @@ def playBack(intro=None, mode='playBack', playback_region='national'):
         keyPress = playFile(commentFile, keyDict)
         if keyPress == '1': # If user presses 1, skip to next comment.
             pass
-        db.addPlaybackEvent(postID, tpb)
+        #db.addPlaybackEvent(postID, tpb) ARJUN PATCHED
+        db.addPlaybackEvent(postID, tpb, callID)
     if mode in ['playNews', 'playFeatured']:
         return True
     tpbm = stopwatch.Timer()
@@ -227,7 +231,8 @@ def playBack(intro=None, mode='playBack', playback_region='national'):
 def invalidDigit(key, context, time):
     # keyDict3 = newKeyDict()
     # playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict3)
-    db.addInvalidkeyEvent(key, context, time)
+    db.addInvalidkeyEvent(key, context, time, callID)
+    #db.addInvalidkeyEvent(key, context, time) ARJUN PATCHED
     # if (str(context)=='mainMenu'):
         # try:
             # playFile(PROMPTS_DIR+'welcome',keyDict)
@@ -244,7 +249,8 @@ def invalidDigit(key, context, time):
 def skipComment(commentID, time):
     debugPrint("SKIPPING COMMENT "+str(commentID))
     db.skipComment(int(commentID))
-    db.addSkipEvent(commentID, time)
+    #db.addSkipEvent(commentID, time) ARJUN PATCHED
+    db.addSkipEvent(commentID, time, callID)
 
 def addComment():
     playFile(PROMPTS_DIR+'mistake-0')
@@ -256,7 +262,8 @@ def addComment():
     os.rename(AST_SOUND_DIR+commentTempFileName+".wav", SOUND_DIR+str(newCommentID)+".wav")
     os.system("lame -h --abr 200 "+SOUND_DIR+str(newCommentID)+".wav "+SOUND_DIR+"/web/" \
                                                              + str(newCommentID)+".mp3")
-    db.addMessageRecordEvent(newCommentID) 
+    #db.addMessageRecordEvent(newCommentID) ARJUN PATCHED 
+    db.addMessageRecordEvent(newCommentID,callID) 
     # server = smtplib.SMTP('smtp.gmail.com:587')
     # server.ehlo()
     # server.starttls()
@@ -355,6 +362,7 @@ if __name__=='__main__':
             mainMenu()
         except KeyPressException, e:
             if e.key != '0':
-                db.addInvalidkeyEvent(e.key, 'mm', 5)
+                #db.addInvalidkeyEvent(e.key, 'mm', 5) ARJUN PATCHED
+                db.addInvalidkeyEvent(e.key, 'mm', 5,callID)
             else:
                 continue

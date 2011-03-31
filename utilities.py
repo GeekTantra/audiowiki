@@ -8,6 +8,7 @@ import random
 def debugPrint(str):
     sys.stderr.write(str+'\n')
     sys.stderr.flush()
+    os.system("echo %s >> /var/log/swara.log" %str)
 
 class KeyPressException(Exception):
     def __init__(self, key):
