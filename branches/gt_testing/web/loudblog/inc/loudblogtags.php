@@ -967,9 +967,8 @@ if (isset($_POST['commentsubmit'])) {
     $akismet->setCommentAuthorURL($_POST['commentweb']);
     $akismet->setCommentContent($_POST['commentmessage']);
     $akismet->setPermalink($settings['url']."/index.php?id={$currentid}#comments");
-    if($akismet->isCommentSpam()) {
-        $ins_currentid = '-'.$currentid;
-    }
+    $ins_currentid = ($akismet->isCommentSpam()) ? ('-'.$currentid) : $currentid;
+    
     // Akismet Comment Spam Prevention <--
     
     //write data into database (doesn't matter, with or without audio)
