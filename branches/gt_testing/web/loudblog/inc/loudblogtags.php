@@ -968,7 +968,7 @@ if (isset($_POST['commentsubmit'])) {
     $akismet->setCommentContent($_POST['commentmessage']);
     $akismet->setPermalink($settings['url']."/index.php?id={$currentid}#comments");
     if($akismet->isCommentSpam()) {
-        $currentid = '-'.$currentid;
+        $ins_currentid = '-'.$currentid;
     }
     // Akismet Comment Spam Prevention <--
     
@@ -978,7 +978,7 @@ if (isset($_POST['commentsubmit'])) {
             audio_file, audio_type, audio_length, audio_size)
             VALUES
             (
-            '".$currentid."',
+            '".$ins_currentid."',
             '".date('Y-m-d H:i:s')."',
             '".$name."', '".$mail."', '".$web."', '".$ip."',
             '".$message_input."', '".$message_html."',
