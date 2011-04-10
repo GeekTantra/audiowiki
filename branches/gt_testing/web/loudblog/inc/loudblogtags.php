@@ -957,7 +957,21 @@ if (isset($_POST['commentsubmit'])) {
     $ip = $_SERVER['REMOTE_ADDR'];
     $message_input = change_entities($_POST['commentmessage']);
     $message_html = trim(no_amp(makehtml(htmlentities($_POST['commentmessage'], ENT_QUOTES, "UTF-8"))));
-
+    // Akismet Comment Spam Prevention -->
+    include_once(realpath(dirname(__FILE__)."/../")."/custom/plugins/Akismet.class.php");
+    $akismet_APIKey = '9b2be0cdbbe5';
+    $akismet_BlogURL = $settings['url'];
+    $akismet = new Akismet($akismet_BlogURL ,$akismet_APIKey);
+    $akismet->setCommentAuthor($_POST['commentname']);
+    $akismet->setCommentAuthorEmail($_POST['commentmail']);
+    $akismet->setCommentAuthorURL($_POST['commentweb']);
+    $akismet->setCommentContent($_POST['commentmessage']);
+    $akismet->setPermalink($settings['url']."/index.php?id={$currentid}#comments");
+    if($akismet->isCommentSpam()) {
+        $currentid = '-'.$currentid;
+    }
+    // Akismet Comment Spam Prevention <--
+    
     //write data into database (doesn't matter, with or without audio)
     $dosql = "INSERT INTO {$GLOBALS['prefix']}lb_comments
              (posting_id, posted, name, mail, web, ip, message_input, message_html,
