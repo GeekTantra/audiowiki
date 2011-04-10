@@ -959,7 +959,7 @@ if (isset($_POST['commentsubmit'])) {
     $message_html = trim(no_amp(makehtml(htmlentities($_POST['commentmessage'], ENT_QUOTES, "UTF-8"))));
     // Akismet Comment Spam Prevention -->
     include_once(realpath(dirname(__FILE__)."/../")."/custom/plugins/Akismet.class.php");
-    $akismet_APIKey = '9b2be0cdbbe5';
+    $akismet_APIKey = '';# Akismet API Key Goes here
     $akismet_BlogURL = $settings['url'];
     $akismet = new Akismet($akismet_BlogURL ,$akismet_APIKey);
     $akismet->setCommentAuthor($_POST['commentname']);
