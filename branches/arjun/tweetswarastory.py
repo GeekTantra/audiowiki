@@ -12,7 +12,7 @@ import oauth2 as oauth
 import os,sys
 
 config=ConfigParser.ConfigParser()
-config.read("/home/swara/audiowiki/twittercredsswara.conf")
+config.read("/home/swara/audiowiki/twittercredsarjunven.conf")
 
 OAUTH_TOKEN = config.get("Authentication","oauth_token")
 OAUTH_TOKEN_SECRET = config.get("Authentication","oauth_token_secret")
@@ -48,5 +48,7 @@ if __name__=="__main__":
 		exit()
 	for post in posts:
 		tweet(post)
+		os.system("/home/swara/audiowiki/mp32avi.sh /home/swara/audiowiki/SwaraCoverLarge.jpg /home/swara/audiowiki/web/sounds/web/%s.mp3 /home/swara/audiowiki/web/videos/%s.avi" %str(post))
 	print "Final post = " + str(post)
+	
 	os.system("echo %s > lastpushedpost" %(str(post)))

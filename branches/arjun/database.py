@@ -33,7 +33,18 @@ class Database:
         posts = self.c.fetchall()
         posts = [i[0] for i in posts]
         return posts
+    def getUnpushedPostsInChannel(self, channelNum, lastid):
+        self.c.execute("SELECT * FROM lb_postings WHERE station = %s and id > %s and status = 3 and pushed is NULL  ORDER BY posted;",(str(channelNum),str(lastid),))
+        posts = self.c.fetchall()
+        posts = [i[0] for i in posts]
+        return posts
 
+    def getTitleforPost(self, channelNum, post):
+        self.c.execute("SELECT title  FROM lb_postings WHERE station = %s and id=%s;",(str(channelNum),str(post),))
+        title = self.c.fetchall()
+        title = [i[0] for i in title]
+        return title
+    
     def publishPost(self, postID):
         self.c.execute("UPDATE lb_postings SET status = 3 WHERE id = %s;",
                         (str(postID),))
@@ -47,6 +58,10 @@ class Database:
     def newCall(self, user):
         self.c.execute("INSERT INTO callLog (user) values (%s);",(str(user),))
         self.db.commit()
+        self.c.execute("SELECT LAST_INSERT_ID() FROM callLog;")
+        callID=self.c.fetchall()
+        callID=[i[0] for i in callID]
+        return callID[0]
 
     def addUser(self, phoneNumberString):
         self.c.execute("INSERT INTO users (phone_number) " + \
@@ -99,31 +114,53 @@ class Database:
         self.db.commit()
         debugPrint("SKIPPED "+str(commentID))
 
-    def addPlaybackEvent(self, postID, duration):
-        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Listened', str(postID), str(duration),))
+    def addPlaybackEvent(self, postID, duration, callid):
+        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto, callid) VALUES (%s, %s, %s, %s);",('Listened', str(postID), str(duration),str(callid),))
         self.db.commit()
         return self.c.lastrowid
+    #def addPlaybackEvent(self, postID, duration):
+        #self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Listened', str(postID), str(duration),))
+        #self.db.commit()
+        #return self.c.lastrowid
 
-    def addSkipEvent(self, postID, duration):
-        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Skipped', str(postID), str(duration),))
+    def addSkipEvent(self, postID, duration,callid):
+        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto, callid) VALUES (%s, %s, %s, %s);",('Skipped', str(postID), str(duration), str(callid),))
         self.db.commit()
 
-    def addInvalidkeyEvent(self, key, when, duration):
-        self.c.execute("INSERT INTO analytics (eventype, invdgtpsd, context, whenpressed) VALUES (%s, %s, %s, %s);",('Invalid Keypress', str(key), str(when), str(duration),))
+    def addInvalidkeyEvent(self, key, when, duration, callid):
+        self.c.execute("INSERT INTO analytics (eventype, invdgtpsd, context, whenpressed,callid) VALUES (%s, %s, %s, %s);",('Invalid Keypress', str(key), str(when), str(duration),str(callid),))
         self.db.commit()
 
-    def addMessageRecordEvent(self, postID):
-        self.c.execute("INSERT INTO analytics (eventype, msgrcd) VALUES (%s, %s);",('Recorded', str(postID),))
+    def addMessageRecordEvent(self, postID,callid):
+        self.c.execute("INSERT INTO analytics (eventype, msgrcd, callid) VALUES (%s, %s,%s);",('Recorded', str(postID),str(callid),))
         self.db.commit()
+    #def addMessageRecordEvent(self, postID):
+        #self.c.execute("INSERT INTO analytics (eventype, msgrcd) VALUES (%s, %s);",('Recorded', str(postID),))
+        #self.db.commit()
 
     def getID(self):
         self.c.execute("""SELECT id FROM cdr ORDER BY calldate DESC LIMIT 1;""")
         callidno = self.c.fetchall()
 
     def getFeaturedPosts(self):
-        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY posted DESC LIMIT 0,1""")
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%featured%') ORDER BY posted DESC""")
         posts = self.c.fetchall();
         posts = [i[0] for i in posts]
+        return posts
+
+    def getEntertainmentPosts(self):
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND ( tags LIKE '%entertainment%') ORDER BY posted DESC""")
+        posts = self.c.fetchall();
+        posts = [i[0] for i in posts]
+        return posts
+
+    def getRegionalPosts(self, region):
+        debugPrint("Getting regional posts for %s1" %region)
+        self.c.execute("""SELECT *  FROM lb_postings WHERE status = '3' AND posted < NOW()  AND tags LIKE %s ORDER BY posted DESC""", ("%"+region.strip().lower()+"-news%"))
+        posts = self.c.fetchall();
+        posts = [i[0] for i in posts]
+        if posts:
+            debugPrint("Found a post! Found a Post!")
         return posts
 
     # Dev's Modification: getLanguageForSeries method
@@ -137,6 +174,19 @@ class Database:
         language = [i[0] for i in language]
         if language !=[] and language[0].strip('\n').strip('\r')!='':
             return language[0].strip('\n').strip('\r')
+        else:
+            return None
+
+    def getRegionForSeries( self, series ):
+        self.c.execute("""
+        SELECT circledata.circle AS circle
+          FROM circledata, mobileseries
+         WHERE mobileseries.circle = circledata.circle
+           AND series LIKE %s""", (series))
+        region = self.c.fetchall()
+        region = [i[0] for i in region]
+        if region != [] and region[0].strip('\n').strip('\r') != '':
+            return region[0].strip('\n').strip('\r')
         else:
             return None
 
