@@ -54,6 +54,11 @@ class Database:
         self.c.execute("UPDATE lb_postings SET status = 2 WHERE id = %s;",
                         (str(postID),))
         self.db.commit()
+    
+    def deletePost(self, postID):
+        self.c.execute("DELETE FROM lb_postings WHERE id = %s;",
+                        (str(postID),))
+        self.db.commit()
 
     def newCall(self, user):
         self.c.execute("INSERT INTO callLog (user) values (%s);",(str(user),))
