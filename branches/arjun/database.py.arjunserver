@@ -21,13 +21,11 @@ class Database:
                                 user=db_user,passwd=db_passwd)
         self.c = self.db.cursor()
         self.c.execute('USE '+db_name+';')
-
     def getChannelNums(self):
 	self.c.execute("SELECT number from stations")
 	channels=self.c.fetchall()
 	channels = [i[0] for i in channels]
 	return channels;
-
     def channelExists(self, channelNum):
         count = self.c.execute("SELECT * FROM stations WHERE number = %s",
                                 (str(channelNum),))
@@ -39,36 +37,6 @@ class Database:
         posts = self.c.fetchall()
         posts = [i[0] for i in posts]
         return posts
-    
-    def getAllPostsInChannel(self, channelNum):
-        self.c.execute("SELECT * FROM lb_postings WHERE station = %s ORDER BY posted DESC;",
-						(str(channelNum),))
-        posts = self.c.fetchall()
-        posts = [i[0] for i in posts]
-        return posts
-    def getUnpushedPostsInChannel(self, channelNum, lastid):
-        self.c.execute("SELECT * FROM lb_postings WHERE station = %s and id > %s and status = 3 ORDER BY posted;",(str(channelNum),str(lastid),))
-        posts = self.c.fetchall()
-        posts = [i[0] for i in posts]
-        return posts
-
-    def getTitleforPost(self, channelNum, post):
-        self.c.execute("SELECT title  FROM lb_postings WHERE station = %s and id=%s;",(str(channelNum),str(post),))
-        title = self.c.fetchall()
-        title = [i[0] for i in title]
-        return title
-    
-    def getLengthforPost(self, channelNum, post):
-        self.c.execute("SELECT audio_length  FROM lb_postings WHERE station = %s and id=%s;",(str(channelNum),str(post),))
-        length = self.c.fetchall()
-        length = [i[0] for i in length]
-        return length
-    
-    def deletePost(self, postID):
-        self.c.execute("DELETE FROM lb_postings WHERE id = %s;",
-                        (str(postID),))
-        self.db.commit()
-
 
     def publishPost(self, postID):
         self.c.execute("UPDATE lb_postings SET status = 3 WHERE id = %s;",
@@ -83,12 +51,6 @@ class Database:
     def newCall(self, user):
         self.c.execute("INSERT INTO callLog (user) values (%s);",(str(user),))
         self.db.commit()
-        #Arjun patched for analytics
-        self.c.execute("SELECT LAST_INSERT_ID() FROM callLog;")
-        callID=self.c.fetchall()
-        callID=[i[0] for i in callID]
-        return callID[0]
-
 
     def addUser(self, phoneNumberString):
         self.c.execute("INSERT INTO users (phone_number) " + \
@@ -100,14 +62,12 @@ class Database:
             "SELECT phone_number FROM users WHERE phone_number = %s;"
                                             ,(str(phoneNumberString),))
         return count>0
-
     def getUsers(self):
         self.c.execute(
             "SELECT phone_number FROM users;")
         numbers=self.c.fetchall()
 	numbers=[i[0] for i in numbers]
 	return numbers
-
     def getCommentIDs(self):
         self.c.execute("""SELECT id from lb_postings WHERE status = 3 \
                         ORDER BY posted DESC;""")
@@ -117,7 +77,7 @@ class Database:
         return comments
 
     def getAllCommentIDs(self):
-        self.c.execute("""SELECT id from lb_postings ORDER BY posted DESC;""")
+        self.c.execute("SELECT id from lb_postings ORDER BY posted DESC;")
         # Select the comments that haven't been archived.
         comments = self.c.fetchall()
         comments = [i[0] for i in comments]
@@ -148,7 +108,6 @@ class Database:
         self.db.commit()
         debugPrint("SKIPPED "+str(commentID))
 		
-    '''
     def addPlaybackEvent(self, postID, duration):
         self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto) VALUES (%s, %s, %s);",('Listened', str(postID), str(duration),))
 	self.db.commit()
@@ -165,33 +124,21 @@ class Database:
     def addMessageRecordEvent(self, postID):
         self.c.execute("INSERT INTO analytics (eventype, msgrcd) VALUES (%s, %s);",('Recorded', str(postID),))
 	self.db.commit()
-
-
-
-
-
-	'''
-    def addPlaybackEvent(self, postID, duration, callid):
-        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto, callid) VALUES (%s, %s, %s, %s);",('Listened', str(postID), str(duration),str(callid),))
-        self.db.commit()
-        return self.c.lastrowid
-
-    def addSkipEvent(self, postID, duration,callid):
-        self.c.execute("INSERT INTO analytics (eventype, msglstnd, durlistndto, callid) VALUES (%s, %s, %s, %s);",('Skipped', str(postID), str(duration), str(callid),))
-        self.db.commit()
-
-    def addInvalidkeyEvent(self, key, when, duration, callid):        
-        self.c.execute("INSERT INTO analytics (eventype, invdgtpsd, context, whenpressed,callid) VALUES (%s, %s, %s, %s);" ,('Invalid Keypress', str(key), str(when), str(duration),str(callid),))
-        self.db.commit()
-
-    def addMessageRecordEvent(self, postID,callid):
-        self.c.execute("INSERT INTO analytics (eventype, msgrcd, callid) VALUES (%s, %s,%s);",('Recorded', str(postID),str(callid),))
-        self.db.commit()
-    
+    def addCellNumSeries(self, series,provider,circle):
+	self.c.execute("INSERT INTO mobileseries (series,provider,circle)  VALUES (%s, %s, %s);", (series, provider, circle,))
+	self.db.commit()
+    def getCircleForSeries(self,series):
+	self.c.execute("SELECT circle from mobileseries WHERE series = %s;", (series,))
+        # Select the comments that haven't been archived.
+        circle = self.c.fetchall()
+        circle = [i[0] for i in circle]
+	if circle !=[] and circle[0].strip('\n').strip('\r')!='':
+	    return circle[0].strip('\n').strip('\r')
+	else:
+	    return None
     def getID(self):
         self.c.execute("""SELECT id FROM cdr ORDER BY calldate DESC LIMIT 1;""")
         callidno = self.c.fetchall()
-
     def addCircleData(self,circle,circlename,language):
 	self.c.execute("INSERT INTO circledata (circle, circlename, language) VALUES (%s, %s, %s);",(circle, circlename, language,))
 	self.db.commit()
