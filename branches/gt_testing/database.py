@@ -21,7 +21,7 @@ class Database:
                                 user=db_user,passwd=db_passwd)
         self.c = self.db.cursor()
         self.c.execute('USE '+db_name+';')
-        
+
     def channelExists(self, channelNum):
         count = self.c.execute("SELECT * FROM stations WHERE number = %s",
                                 (str(channelNum),))
@@ -29,24 +29,25 @@ class Database:
         
     def getPostsInChannel(self, channelNum):
         self.c.execute("SELECT * FROM lb_postings WHERE station = %s and status = 3 ORDER BY posted DESC;",
-                        (str(channelNum),))
+						(str(channelNum),))
         posts = self.c.fetchall()
         posts = [i[0] for i in posts]
         return posts
 
     def publishPost(self, postID):
         self.c.execute("UPDATE lb_postings SET status = 3 WHERE id = %s;",
-                        (str(postID),))
+						(str(postID),))
         self.db.commit()
 
     def archivePost(self, postID):
         self.c.execute("UPDATE lb_postings SET status = 2 WHERE id = %s;",
-                        (str(postID),))
-        self.db.commit()
+						(str(postID),))
+		self.db.commit()
 
     def newCall(self, user):
         self.c.execute("INSERT INTO callLog (user) values (%s);",(str(user),))
         self.db.commit()
+        #Arjun patched for analytics
         self.c.execute("SELECT LAST_INSERT_ID() FROM callLog;")
         callID=self.c.fetchall()
         callID=[i[0] for i in callID]
@@ -80,16 +81,16 @@ class Database:
 
    
     def addCommentToChannel(self, phoneNum, channel):
-        self.c.execute("INSERT INTO lb_postings (user, station) VALUES (%s, %s);",(phoneNum, str(channel),))
-        self.db.commit()
-        ids = str(self.c.lastrowid)
-        extension = '.mp3'
-        filename = ids + extension
-        print filename
-        self.c.execute("UPDATE lb_postings SET audio_file = %s WHERE id = %s;",(filename, ids)) 
-        self.db.commit()
-        return ids
-
+		self.c.execute("INSERT INTO lb_postings (user, station) VALUES (%s, %s);",(phoneNum, str(channel),))
+		self.db.commit()
+		ids = str(self.c.lastrowid)
+		extension = '.mp3'	
+		filename = ids + extension
+		print filename
+		self.c.execute("UPDATE lb_postings SET audio_file = %s WHERE id = %s;",(filename, ids)) 
+		self.db.commit()
+		return ids
+		
     def addComment(self, phoneNum):
         self.c.execute("INSERT INTO lb_postings (user) VALUES (%s);", \
                        (phoneNum))
@@ -194,6 +195,7 @@ class Database:
         else:
             return None
 
+
     def addCircleData(self,circle,circlename,language):
         self.c.execute("INSERT INTO circledata (circle, circlename, language) VALUES (%s, %s, %s);",(circle, circlename, language,))
         self.db.commit()
@@ -214,7 +216,18 @@ class Database:
         calls = self.c.fetchall()
         #calls = [i[0] for i in calls]
         return calls
-
+    def getNumReportsByDate(self):
+	self.c.execute("SELECT DATE(posted), count(*) from lb_postings WHERE status=3 GROUP BY DATE(posted) ORDER BY DATE(posted);")
+        # Select the comments that haven't been archived.
+        calls = self.c.fetchall()
+        #calls = [i[0] for i in calls]
+        return calls
+    def getStoryList(self):
+	self.c.execute("SELECT DATE(posted),id, title from lb_postings WHERE status=3;")
+        # Select the comments that haven't been archived.
+        calls = self.c.fetchall()
+        #calls = [i[0] for i in calls]
+        return calls
     def getNumCallsByCircle(self):
         self.c.execute("select circle,sum(numcalls) from (select count(*) as numcalls,mobileseries.circle as circle,mobileseries.series as series from callLog,mobileseries where (substr(callLog.user,1,4)=mobileseries.series) group by mobileseries.series) as callsbyseries group by circle order by sum(numcalls) desc;")
         # Select the comments that haven't been archived.
