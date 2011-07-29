@@ -58,6 +58,18 @@ class Database:
         title = [i[0] for i in title]
         return title
     
+    def getTagsforPost(self, channelNum, post):
+        self.c.execute("SELECT tags  FROM lb_postings WHERE station = %s and id=%s;",(str(channelNum),str(post),))
+        tags = self.c.fetchall()
+        tags = [i[0] for i in tags]
+        return tags
+
+    def getMessageforPost(self, channelNum, post):
+        self.c.execute("SELECT message_input  FROM lb_postings WHERE station = %s and id=%s;",(str(channelNum),str(post),))
+        message = self.c.fetchall()
+        message = [i[0] for i in message]
+        return message
+
     def getLengthforPost(self, channelNum, post):
         self.c.execute("SELECT audio_length  FROM lb_postings WHERE station = %s and id=%s;",(str(channelNum),str(post),))
         length = self.c.fetchall()
