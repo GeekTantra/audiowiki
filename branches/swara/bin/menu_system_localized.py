@@ -114,7 +114,7 @@ def newsMenu():
     debugPrint(keyPressCLIPrompt("regional news", "2"))
     debugPrint(keyPressCLIPrompt("cultural/entertainment news", "3"))
     global PROMPTS_DIR
-    PROMPTS_DIR = SOUND_DIR + 'prompts/' + (language, 'hindi')[language == None] + '/' 
+    PROMPTS_DIR = SOUND_DIR + '/prompts/' + (language, 'hindi')[language == None] + '/' 
     keyDict = newKeyDict()
     keyDict['1'] = (playBack,(None, 'playNews',))
     keyDict['2'] = (playBack,(None, 'playNews', region,))
@@ -137,7 +137,7 @@ def playBackNews( intro=None ):
     callid = db.getID()
     tmm = stopwatch.Timer()
     global PROMPTS_DIR
-    PROMPTS_DIR = SOUND_DIR + 'prompts/' + (language, 'hindi')[language == None] + '/' 
+    PROMPTS_DIR = SOUND_DIR + '/prompts/' + (language, 'hindi')[language == None] + '/' 
     keyDict = newKeyDict()
     keyDict['1'] = (addComment,())
     keyDict['2'] = (playBackNews,('skip-post-1',))
@@ -182,7 +182,7 @@ def playBack(intro=None, mode='playBack', playback_region='national'):
         debugPrint( "Playing Cultural/Entertainment Messages!" );
 
     if len(posts) == 0:
-        return playFile(PROMPTS_DIR+'no-comments', keyDict)
+        return playFile(PROMPTS_DIR+'/no-comments', keyDict)
     playFile(PROMPTS_DIR+'mistake-0', keyDict)
     playFile(PROMPTS_DIR+intro, keyDict)
     count = 0
@@ -297,7 +297,7 @@ def playFeatured():
     posts = db.getFeaturedPosts()
     debugPrint( "Playing Featured Messages!" );
     if len(posts) == 0:
-        return playFile(PROMPTS_DIR+'no-comments', keyDict)
+        return playFile(PROMPTS_DIR+'/no-comments', keyDict)
     playFile(PROMPTS_DIR+'mistake-0', keyDict)
     count = 0
     for postID in posts:
