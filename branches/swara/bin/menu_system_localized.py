@@ -36,9 +36,10 @@ else:
     from asteriskinterface import *
     from database import *
 
-#language = 'kannada' # Default language is kannada
-SOUND_DIR = '/var/lib/asterisk/sounds/audiowikiIndia/'
-AST_SOUND_DIR = '/var/lib/asterisk/sounds/'
+config=ConfigParser.ConfigParser()
+config.read("/etc/swara.conf")
+LOGFILE = config.get("System","logfile")
+SOUND_DIR = config.get("System","sounddir")
 #PROMPTS_DIR = SOUND_DIR + 'prompts/hindi/'
 
 sys.setrecursionlimit(15000)
@@ -283,7 +284,7 @@ def recordFileNoPlayback(introFilename, recordLen=30000):
 ##Logger function - Arjun##
 def logger(message):
 	timestamp=os.popen("date +%d-%m-%Y-%H:%M:%S").read().strip()
-	os.system("echo %s %s >> /home/arjun/dev.log" %(timestamp,message))
+	os.system("echo %s %s >> %s" %(timestamp,message,LOGFILE))
 
 
 ### Procedural code starts here ###
