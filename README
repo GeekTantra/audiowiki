@@ -1,6 +1,9 @@
-INSTALLATION
+#################################################
+################INSTALLATION#####################
+#################################################
 
-1. Install pre-requisites
+#1. Install pre-requisites
+##################################################
 # yum install asterisk yum install -y mysql mysql-server wget gcc gcc-c++ bison libtermcap-devel newt newt-devel ncurses ncurses-devel svn zlib zlib-devel openssl openssl-devel kernel-devel httpd php-mysql php MySQL-python
 # yum install python-setuptools
 # [ADDITIONAL DEPENDENCIES]
@@ -10,12 +13,34 @@ INSTALLATION
 # easy_install stopwatch
 # Python MySQL DB connectors
 # easy_install MySQL-python
-2. Disable firewall
+
+#2. Disable firewall
+##################################################
 # /etc/init.d/iptables stop
 # chkconfig iptables off
 # perl -p -i -e "s/enforcing/permissive/g" /etc/selinux/config
-3. Checkout Swara code
+
+#3. Start services on boot
+##################################################
+# service sshd start
+# service httpd start
+# service mysqld start
+# chkconfig sshd on
+# chkconfig httpd on
+# chkconfig mysqld on
+
+#4. Checkout Swara code
+##################################################
 # cd /opt
 # svn co https://audiowiki.googlecode.com/svn/branches/swara
-4. Set up simlinks
-# ln -s /opt/swara/bin /usr/lib/asterisk/agi-bin
+
+#5.Setup mysqld
+##################################################
+# /usr/bin/mysql_secure_installation
+# Answer yes to every question
+# mysql -u root -p swara < /opt/swara/conf/swaradb.sql
+
+#4. Set up simlinks
+##################################################
+# ln -s /opt/swara/bin /usr/share/asterisk/agi-bin
+# ln -s /opt/swara/bin /usr/share/asterisk/sounds
