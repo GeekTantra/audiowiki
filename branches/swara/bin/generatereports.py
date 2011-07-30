@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os,sys,time,datetime
+sys.path.append("/opt/swara/libs")
 from database import *
 config=ConfigParser.ConfigParser()
 config.read("/etc/swara.conf")
