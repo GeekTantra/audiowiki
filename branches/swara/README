@@ -13,6 +13,10 @@
 # easy_install stopwatch
 # Python MySQL DB connectors
 # easy_install MySQL-python
+# easy_install MySQL-Python
+# easy_install oauth2
+# easy_install tweepy
+# easy_install simplejson
 
 #2. Disable firewall
 ##################################################
