@@ -90,7 +90,7 @@ class Database:
     def archivePost(self, postID):
         self.c.execute("UPDATE lb_postings SET status = 2 WHERE id = %s;",
 						(str(postID),))
-		self.db.commit()
+	self.db.commit()
 
     def newCall(self, user):
         self.c.execute("INSERT INTO callLog (user) values (%s);",(str(user),))
@@ -141,7 +141,7 @@ class Database:
 		ids = str(self.c.lastrowid)
 		extension = '.mp3'	
 		filename = ids + extension
-		print filename
+		#print filename
 		self.c.execute("UPDATE lb_postings SET audio_file = %s WHERE id = %s;",(filename, ids)) 
 		self.db.commit()
 		return ids
