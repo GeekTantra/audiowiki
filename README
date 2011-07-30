@@ -1,0 +1,14 @@
+INSTALLATION
+
+1. Install pre-requisites
+# yum install asterisk subversion
+2. Disable firewall
+# /etc/init.d/iptables stop
+# chkconfig iptables off
+# perl -p -i -e "s/enforcing/permissive/g" /etc/selinux/config
+2. Checkout Swara code
+# cd /opt
+# svn co https://audiowiki.googlecode.com/svn/branches/swara
+
+3. Set up simlinks
+# ln -s /opt/swara/bin /usr/lib/asterisk/agi-bin
