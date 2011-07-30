@@ -42,5 +42,6 @@
 
 #4. Set up simlinks
 ##################################################
+# ln -s /opt/swara/web /var/www/html
 # ln -s /opt/swara/bin /usr/share/asterisk/agi-bin
 # ln -s /opt/swara/bin /usr/share/asterisk/sounds
