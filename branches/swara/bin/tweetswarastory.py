@@ -4,12 +4,12 @@
 # further requires a config file (tweetrswara.conf) with the access token for the swara user
 
 import os,sys,time
+sys.path.append("/opt/swara/libs")
 from database import *
 from utilities import *
 import ConfigParser
 import tweepy
 import oauth2 as oauth
-import os,sys
 
 config=ConfigParser.ConfigParser()
 config.read("/home/swara/audiowiki/twittercredsarjunven.conf")
