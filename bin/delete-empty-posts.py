@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #Menu system
 import sys,os
+sys.path.append("/opt/swara/libs")
 from utilities import *
 from database import *
 from mutagen.mp3 import MP3
