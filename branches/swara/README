@@ -44,11 +44,12 @@
 # Answer yes to every question
 # mysql -u root -p swara < /opt/swara/conf/swaradb.sql
 
-#7. Set up simlinks
+#7. Set up simlinks and Asterisk configs
 ##################################################
 # ln -s /opt/swara/web /var/www/html
 # ln -s /opt/swara/bin /usr/share/asterisk/agi-bin
 # ln -s /opt/swara/bin /usr/share/asterisk/sounds
+# cp /opt/swara/conf/extensions.conf /opt/swara/conf/sip.conf /etc/asterisk
 
 #7. Set up Admin Interface
 ##################################################
