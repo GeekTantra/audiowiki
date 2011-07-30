@@ -1,14 +1,21 @@
 INSTALLATION
 
 1. Install pre-requisites
-# yum install asterisk subversion
+# yum install asterisk yum install -y mysql mysql-server wget gcc gcc-c++ bison libtermcap-devel newt newt-devel ncurses ncurses-devel svn zlib zlib-devel openssl openssl-devel kernel-devel httpd php-mysql php MySQL-python
+# yum install python-setuptools
+# [ADDITIONAL DEPENDENCIES]
+# Python Setuptools
+# yum install setuptools
+# Python Stopwatch module
+# easy_install stopwatch
+# Python MySQL DB connectors
+# easy_install MySQL-python
 2. Disable firewall
 # /etc/init.d/iptables stop
 # chkconfig iptables off
 # perl -p -i -e "s/enforcing/permissive/g" /etc/selinux/config
-2. Checkout Swara code
+3. Checkout Swara code
 # cd /opt
 # svn co https://audiowiki.googlecode.com/svn/branches/swara
-
-3. Set up simlinks
+4. Set up simlinks
 # ln -s /opt/swara/bin /usr/lib/asterisk/agi-bin

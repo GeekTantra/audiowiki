@@ -178,11 +178,8 @@ def addComment():
             break
     newCommentID = db.addCommentToChannel(user, '12345')
     os.rename(AST_SOUND_DIR+commentTempFileName+".wav", SOUND_DIR+str(newCommentID)+".wav")
-    #os.system("lame -h --abr 200 "+SOUND_DIR+str(newCommentID)+".wav "+SOUND_DIR+"/web/" \
-                                                             + str(newCommentID)+".mp3")
-    os.system("lame -h --abr 200 "+SOUND_DIR+str(newCommentID)+".wav "+SOUND_DIR+ "" \
-                                                             + str(newCommentID)+".mp3")
-	logger("Recorded Message")
+    os.system("lame -h --abr 200 "+SOUND_DIR+str(newCommentID)+".wav "+SOUND_DIR + str(newCommentID)+".mp3")
+    logger("Recorded Message")
     db.addMessageRecordEvent(newCommentID) 
     # server = smtplib.SMTP('smtp.gmail.com:587')
     # server.ehlo()
