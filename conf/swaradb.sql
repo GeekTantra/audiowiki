@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.1.55, for redhat-linux-gnu (x86_64)
+-- MySQL dump 10.13  Distrib 5.1.49, for pc-linux-gnu (i686)
 --
--- Host: localhost    Database: swara
+-- Host: localhost    Database: audiwikiswara
 -- ------------------------------------------------------
--- Server version	5.1.55
+-- Server version	5.1.47
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -31,8 +31,9 @@ CREATE TABLE `analytics` (
   `invdgtpsd` int(1) NOT NULL,
   `context` varchar(255) NOT NULL,
   `whenpressed` varchar(255) NOT NULL,
+  `callid` int(11) DEFAULT NULL,
   PRIMARY KEY (`eventid`)
-) ENGINE=MyISAM AUTO_INCREMENT=52739 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=165486 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,7 +72,7 @@ CREATE TABLE `callLog` (
   `timeOfCall` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=17558 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=49282 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -84,8 +85,8 @@ DROP TABLE IF EXISTS `cdr`;
 CREATE TABLE `cdr` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `calldate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `clid` varchar(80) NOT NULL DEFAULT '',
-  `src` varchar(80) NOT NULL DEFAULT '',
+  `clid` varchar(80) CHARACTER SET utf8 NOT NULL DEFAULT '',
+  `src` varchar(80) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `dst` varchar(80) NOT NULL DEFAULT '',
   `dcontext` varchar(80) NOT NULL DEFAULT '',
   `channel` varchar(80) NOT NULL DEFAULT '',
@@ -94,7 +95,7 @@ CREATE TABLE `cdr` (
   `lastdata` varchar(80) NOT NULL DEFAULT '',
   `duration` int(11) NOT NULL DEFAULT '0',
   `billsec` int(11) NOT NULL DEFAULT '0',
-  `disposition` varchar(45) NOT NULL DEFAULT '',
+  `disposition` varchar(45) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `amaflags` int(11) NOT NULL DEFAULT '0',
   `accountcode` varchar(20) NOT NULL DEFAULT '',
   `userfield` varchar(255) NOT NULL DEFAULT '',
@@ -103,7 +104,7 @@ CREATE TABLE `cdr` (
   KEY `calldate` (`calldate`),
   KEY `dst` (`dst`),
   KEY `accountcode` (`accountcode`)
-) ENGINE=MyISAM AUTO_INCREMENT=1887 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=50431 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -118,26 +119,6 @@ CREATE TABLE `circledata` (
   `circlename` varchar(100) DEFAULT NULL,
   `language` varchar(50) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `comments`
---
-
-DROP TABLE IF EXISTS `comments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `comments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `skip_count` int(11) NOT NULL DEFAULT '0',
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `user` text NOT NULL,
-  `description` text,
-  `archived` int(11) DEFAULT '2',
-  `edited` int(11) NOT NULL DEFAULT '0',
-  `station` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1139 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -204,7 +185,7 @@ CREATE TABLE `lb_authors` (
   `publish_all` int(11) DEFAULT NULL,
   `admin` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -244,7 +225,7 @@ CREATE TABLE `lb_comments` (
   `audio_length` int(8) DEFAULT NULL,
   `audio_size` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=8934 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=127742 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -306,7 +287,7 @@ CREATE TABLE `lb_postings` (
   `user` text NOT NULL,
   `time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3137 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=6431 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -334,6 +315,28 @@ CREATE TABLE `mobileseries` (
   `provider` varchar(5) DEFAULT NULL,
   `circle` varchar(5) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `patients`
+--
+
+DROP TABLE IF EXISTS `patients`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patients` (
+  `patient_id` int(3) DEFAULT NULL,
+  `number` int(10) DEFAULT NULL,
+  `language` varchar(5) DEFAULT NULL,
+  `month_enrolled` int(2) DEFAULT NULL,
+  `day_enrolled` int(1) DEFAULT NULL,
+  `weeks_pregnant_at_enrollment` int(2) DEFAULT NULL,
+  `days_pregnant_at_enrollment` int(1) DEFAULT NULL,
+  `contact_days` varchar(11) DEFAULT NULL,
+  `contact_time_start` decimal(17,16) DEFAULT NULL,
+  `contact_time_end` decimal(17,16) DEFAULT NULL,
+  `message` varchar(10) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -365,7 +368,7 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `phone_number` text,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2155 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=6033 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -377,4 +380,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-07-30  4:25:26
+-- Dump completed on 2011-07-30 14:37:40

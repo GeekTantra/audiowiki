@@ -3,6 +3,7 @@
 #Menu system
 import smtplib
 import sys
+sys.path.append("/opt/swara/libs")
 import stopwatch
 import ConfigParser
 if len(sys.argv) > 1:
@@ -41,6 +42,7 @@ config.read("/etc/swara.conf")
 LOGFILE = config.get("System","logfile")
 SOUND_DIR = config.get("System","sounddir")
 #PROMPTS_DIR = SOUND_DIR + 'prompts/hindi/'
+AST_SOUND_DIR = '/var/lib/asterisk/sounds/'
 
 sys.setrecursionlimit(15000)
 ##### State functions ######
@@ -52,7 +54,9 @@ def login():
 
     Audio Files:
     """
-    db.newCall(user)
+    global callID
+    callID=db.newCall(user)
+    debugPrint("Call ID = " + str(callID))
     debugPrint("detected caller id="+user)
     if not db.isUser(user): # If the phone number calling the system is
                             # unrecognized by the database, add the number
@@ -74,24 +78,24 @@ def mainMenu():
     callid = db.getID()
     # callid = int(callid) + 1 
     tmm = stopwatch.Timer()
-    debugPrint("STARTING MAIN MENU")
+    debugPrint("STARTING MAIN MENU: Region: "+str(region));
     #language = 'hindi'
     #debugPrint("LANGUAGE IS "+language)
     global PROMPTS_DIR
     #Dev's Mod: Makes Hindi the default language
-    PROMPTS_DIR = SOUND_DIR + 'prompts/' + (language, 'hindi')[language == None] + '/' 
+    PROMPTS_DIR = SOUND_DIR + '/prompts/' + (language, 'hindi')[language == None] + '/' 
     #logger("%s" %PROMPTS_DIR)
     keyDict = newKeyDict()
     keyDict['1'] = (addComment,())
-    keyDict['2'] = (playBack,('skip-post-1',))
-    keyDict['3'] = (invalidDigit,(3, 'Main Menu', tmm,))
-    keyDict['4'] = (invalidDigit,(4, 'Main Menu', tmm,))
+    keyDict['2'] = (playBackNews,('skip-post-1',))
+    keyDict['3'] = (newsMenu,())
+    keyDict['4'] = (invalidDigit,(5, 'Main Menu', tmm,))
     keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
     keyDict['6'] = (invalidDigit,(6, 'Main Menu', tmm,))
     keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
     keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
     keyDict['9'] = (invalidDigit,(9, 'Main Menu', tmm,))
-    keyDict['*'] = (playFeatured,())
+    keyDict['*'] = (playBack,(None, 'playFeatured',))
     try:
         playFile(PROMPTS_DIR+'welcome', keyDict)
         for i in range(1,4):
@@ -102,9 +106,81 @@ def mainMenu():
     except KeyPressException, e:
         raise
 
-def playBack(intro=None):
+def newsMenu():
+    callid = db.getID()
+    tmm = stopwatch.Timer()
+    debugPrint("---> STARTING NEWS MENU for Region: "+str(region))
+    debugPrint(keyPressCLIPrompt("national news", "1"))
+    debugPrint(keyPressCLIPrompt("regional news", "2"))
+    debugPrint(keyPressCLIPrompt("cultural/entertainment news", "3"))
+    global PROMPTS_DIR
+    PROMPTS_DIR = SOUND_DIR + 'prompts/' + (language, 'hindi')[language == None] + '/' 
     keyDict = newKeyDict()
-    posts = db.getPostsInChannel('12345')
+    keyDict['1'] = (playBack,(None, 'playNews',))
+    keyDict['2'] = (playBack,(None, 'playNews', region,))
+    keyDict['3'] = (playBack,(None, 'playEntertainmentNews', region,))
+    keyDict['4'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['5'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['6'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
+    keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
+    keyDict['9'] = (invalidDigit,(9, 'Main Menu', tmm,))
+    keyDict['*'] = (playBack,(None, 'playFeatured',))
+    playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict)
+    for i in range(1,4):
+        playFile(PROMPTS_DIR+'record-1', keyDict) # To be replaced by appropriate Audio Files
+        playFile(PROMPTS_DIR+'listen-2', keyDict) # To be replaced by appropriate Audio Files
+        playFile(PROMPTS_DIR+'wait-5-seconds', keyDict)
+    hangup()
+
+def playBackNews( intro=None ):
+    callid = db.getID()
+    tmm = stopwatch.Timer()
+    global PROMPTS_DIR
+    PROMPTS_DIR = SOUND_DIR + 'prompts/' + (language, 'hindi')[language == None] + '/' 
+    keyDict = newKeyDict()
+    keyDict['1'] = (addComment,())
+    keyDict['2'] = (playBackNews,('skip-post-1',))
+    keyDict['3'] = (newsMenu,())
+    keyDict['4'] = (invalidDigit,(5, 'Main Menu', tmm,))
+    keyDict['5'] = (invalidDigit,(5, 'Main Menu', tmm,))
+    keyDict['6'] = (invalidDigit,(6, 'Main Menu', tmm,))
+    keyDict['7'] = (invalidDigit,(7, 'Main Menu', tmm,))
+    keyDict['8'] = (invalidDigit,(8, 'Main Menu', tmm,))
+    keyDict['9'] = (invalidDigit,(9, 'Main Menu', tmm,))
+    keyDict['*'] = (playBack,(None, 'playFeatured',))
+    
+    debugPrint('Playing national news.')
+    playBack(intro, 'playNews', 'national')
+    playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) # Pause after national news. Can be replaced by appropriate audio prompt.
+    
+    debugPrint('Playing news from region ' + region)
+    playBack(intro, 'playNews', region)
+    playFile(PROMPTS_DIR+'wait-5-seconds', keyDict) # Pause after regional news. Can be replaced by appropriate audio prompt.
+    
+    debugPrint('Playing entertainment news.')
+    playBack(intro, 'playEntertainmentNews', region)
+    
+
+def playBack(intro=None, mode='playBack', playback_region='national'):
+    """
+    SINGLE PLAYBACK ROUTINE FOR 'playBack', 'playNews', 'playFeatured', 'playEntertainmentNews'
+    """
+    keyDict = newKeyDict()
+    if mode == 'playBack':
+        posts = db.getPostsInChannel('12345')
+        debugPrint( "Playing Messages!" );
+    elif mode == 'playNews':
+        debugPrint("Getting posts for region %s" %playback_region)
+        posts = db.getRegionalPosts(playback_region)
+        debugPrint( "Playing News from '"+playback_region+"' region!" );
+    elif mode == 'playFeatured':
+        posts = db.getFeaturedPosts()
+        debugPrint( "Playing Featured Messages!" );
+    elif mode == 'playEntertainmentNews':
+        posts = db.getEntertainmentPosts()
+        debugPrint( "Playing Cultural/Entertainment Messages!" );
+
     if len(posts) == 0:
         return playFile(PROMPTS_DIR+'no-comments', keyDict)
     playFile(PROMPTS_DIR+'mistake-0', keyDict)
@@ -152,7 +228,8 @@ def playBack(intro=None):
 def invalidDigit(key, context, time):
     # keyDict3 = newKeyDict()
     # playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict3)
-    db.addInvalidkeyEvent(key, context, time)
+    db.addInvalidkeyEvent(key, context, time, callID)
+    #db.addInvalidkeyEvent(key, context, time) ARJUN PATCHED
     # if (str(context)=='mainMenu'):
         # try:
             # playFile(PROMPTS_DIR+'welcome',keyDict)
@@ -169,7 +246,8 @@ def invalidDigit(key, context, time):
 def skipComment(commentID, time):
     debugPrint("SKIPPING COMMENT "+str(commentID))
     db.skipComment(int(commentID))
-    db.addSkipEvent(commentID, time)
+    #db.addSkipEvent(commentID, time) ARJUN PATCHED
+    db.addSkipEvent(commentID, time, callID)
 
 def addComment():
     playFile(PROMPTS_DIR+'mistake-0')
@@ -177,11 +255,15 @@ def addComment():
         commentTempFileName = recordFileNoPlayback(PROMPTS_DIR+'record-message-beep',300)
         if commentTempFileName:
             break
+    logger(commentTempFileName)
     newCommentID = db.addCommentToChannel(user, '12345')
-    os.rename(AST_SOUND_DIR+commentTempFileName+".wav", SOUND_DIR+str(newCommentID)+".wav")
-    os.system("lame -h --abr 200 "+SOUND_DIR+str(newCommentID)+".wav "+SOUND_DIR + str(newCommentID)+".mp3")
-    logger("Recorded Message")
-    db.addMessageRecordEvent(newCommentID) 
+    os.rename(SOUND_DIR+"/"+commentTempFileName+".wav", SOUND_DIR+str(newCommentID)+".wav")
+    os.system("lame -h --abr 200 "+SOUND_DIR+str(newCommentID)+".wav "+SOUND_DIR+"/web/" \
+                                                            + str(newCommentID)+".mp3")
+    #db.addMessageRecordEvent(newCommentID) ARJUN PATCHED 
+    logger(newCommentID)
+    logger(callID)
+    db.addMessageRecordEvent(newCommentID,callID) 
     # server = smtplib.SMTP('smtp.gmail.com:587')
     # server.ehlo()
     # server.starttls()
@@ -189,6 +271,7 @@ def addComment():
     # server.login(username,password)
     # server.sendmail(fromaddr, toaddrs, msg)
     # server.quit()
+    logger("Added message record event")
     trm = stopwatch.Timer()
     playFile(PROMPTS_DIR+'thank-you-submitted')
     keyDict2 = newKeyDict()
@@ -201,7 +284,7 @@ def addComment():
     keyDict2['7'] = (invalidDigit,(7, 'Main Menu after Recording', trm,))
     keyDict2['8'] = (invalidDigit,(8, 'Main Menu after Recording', trm,))
     keyDict2['9'] = (invalidDigit,(9, 'Main Menu after Recording', trm,))
-    keyDict2['*'] = (playFeatured,())
+    keyDict2['*'] = (playBack,(None, 'playFeatured',))
     for i in range(1,4):
         playFile(PROMPTS_DIR+'this-cgnet-swara', keyDict2)
         playFile(PROMPTS_DIR+'record-1', keyDict2)
@@ -334,12 +417,16 @@ if __name__=='__main__':
     #logger("%s" %circle)
     #language=db.getLanguageForCircle(circle)
     language=db.getLanguageForSeries(user[:4])
+    region=db.getRegionForSeries(user[:4])
+    #if region != "":
+	#debugPrint("REGION::::"+region)
     #logger("%s" %language)
     while True:
         try:
             mainMenu()
         except KeyPressException, e:
             if e.key != '0':
-                db.addInvalidkeyEvent(e.key, 'mm', 5)
+                #db.addInvalidkeyEvent(e.key, 'mm', 5) ARJUN PATCHED
+                db.addInvalidkeyEvent(e.key, 'mm', 5,callID)
             else:
                 continue
