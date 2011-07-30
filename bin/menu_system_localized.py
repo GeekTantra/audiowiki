@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #Menu system
-import smtplib
 import sys
 sys.path.append("/opt/swara/libs")
+import smtplib
 import stopwatch
 import ConfigParser
 if len(sys.argv) > 1:
