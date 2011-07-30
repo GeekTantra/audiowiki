@@ -5,6 +5,7 @@ from database import *
 config=ConfigParser.ConfigParser()
 config.read("/etc/swara.conf")
 STAT_DIR = config.get("System","statdir")
+STAT_DIR=STAT_DIR+"/"
 
 def genCSVCallsByDate(ts):
     ofile="%sCallsByDate-%s.csv" %(STAT_DIR,ts)
