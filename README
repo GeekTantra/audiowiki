@@ -42,6 +42,9 @@
 ##################################################
 # /usr/bin/mysql_secure_installation
 # Answer yes to every question
+# mysql -u root -p <Enter the password>
+# create database swara;
+# exit
 # mysql -u root -p swara < /opt/swara/conf/swaradb.sql
 
 #7. Set up simlinks and Asterisk configs
