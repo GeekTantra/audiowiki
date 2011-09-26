@@ -3,8 +3,6 @@
 #Menu system
 import smtplib
 import sys
-import ConfigParser
-sys.path.append("/opt/swara/libs")
 import stopwatch
 if len(sys.argv) > 1:
     DEBUG = True
@@ -37,19 +35,10 @@ else:
     from asteriskinterface import *
     from database import *
 
-#language = 'kannada' # Default language is kannada
-language="hindi"
-#SOUND_DIR = '/var/lib/asterisk/sounds/audiowikiIndia/'
-#PROMPTS_DIR = SOUND_DIR + 'prompts/hindi/'
-#AST_SOUND_DIR = '/var/lib/asterisk/sounds/'
-config=ConfigParser.ConfigParser()
-config.read("/etc/swara.conf")
-LOGFILE = config.get("System","logfile")
-SOUND_DIR = config.get("System","sounddir")
-SOUND_DIR = SOUND_DIR + "/"
-#PROMPTS_DIR = SOUND_DIR + 'prompts/hindi/'
+language = 'kannada' # Default language is kannada
+SOUND_DIR = '/var/lib/asterisk/sounds/audiowikiIndia/'
+PROMPTS_DIR = SOUND_DIR + 'prompts/hindi/'
 AST_SOUND_DIR = '/var/lib/asterisk/sounds/'
-PROMPTS_DIR = SOUND_DIR + '/prompts/' + (language, 'hindi')[language == None] + '/' 
 
 sys.setrecursionlimit(15000)
 
@@ -118,8 +107,7 @@ def playBack(intro=None):
     playFile(PROMPTS_DIR+intro, keyDict)
     count = 0
     for postID in posts:
-        os.system("echo %s >> /opt/swara/log.txt" %(postID))
-	tpb = stopwatch.Timer()
+        tpb = stopwatch.Timer()
         count = count + 1
         if (count==5):
             break
